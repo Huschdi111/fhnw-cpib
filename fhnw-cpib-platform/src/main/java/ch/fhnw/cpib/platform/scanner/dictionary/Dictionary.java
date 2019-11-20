@@ -34,6 +34,7 @@ public class Dictionary {
         tokens.put("global", new Tokens.Token(Terminal.GLOBAL));
         tokens.put("if", new Tokens.Token(Terminal.IF));
         tokens.put("if:", new Tokens.Token(Terminal.GUARDEDIF));
+        tokens.put(":endif", new Tokens.Token(Terminal.GUARDEDENDIF));
         tokens.put("init", new Tokens.Token(Terminal.INIT));
         tokens.put("local", new Tokens.Token(Terminal.LOCAL));
         tokens.put("not", new Tokens.Token(Terminal.NOT));
