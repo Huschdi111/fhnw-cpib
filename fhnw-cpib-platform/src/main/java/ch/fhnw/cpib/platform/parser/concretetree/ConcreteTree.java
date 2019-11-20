@@ -1213,10 +1213,10 @@ public class ConcreteTree {
             return getHead("<CmdIfGuarded>") + arrowTerm + cpsArrowTerm + getHead("</CmdIfGuarded>");
         }
 
-        /*@Override
+        @Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
-            return new AbstractTree.CondCmd(expr.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), repelseif.toAbstract(idendation + 1), optelse.toAbstract(idendation), repcpscmd.toAbstract(idendation + 1), idendation);
-        }*/
+            return null;
+        }
     }
 
     public static class ArrowTerm extends ConcreteNode {
@@ -1233,10 +1233,6 @@ public class ConcreteTree {
         @Override
         public String toString() {
             return getHead("<ArrowTerm>") + expr +  cpsCmd + getHead("</ArrowTerm>");
-        }
-        @Override
-        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation)  {
-            //TODO lukas
         }
     }
 
@@ -1255,11 +1251,6 @@ public class ConcreteTree {
         @Override
         public String toString() {
             return getHead("<CpsArrowTerm>") + arrowTerm +  cpsArrowTerm + getHead("</CpsArrowTerm>");
-        }
-
-        @Override
-        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
-            //TODO
         }
     }
 
