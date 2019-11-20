@@ -7,7 +7,7 @@ import ch.fhnw.cpib.platform.scanner.states.State;
 import ch.fhnw.cpib.platform.scanner.tokens.TokenList;
 
 public class Scanner {
-
+    //TODO Guardedif in scanner tätschen
     private final Dictionary dictionary;
 
     public Scanner() {

@@ -24,6 +24,8 @@ public enum Terminal {
     BECOMES(":="),
     LPAREN("("),
     RPAREN(")"),
+    GUARDOPR("|"),
+    ARROWOPR("=>"),
 
     // Modes
     FLOWMODE("FLOWMODE"),
@@ -37,6 +39,7 @@ public enum Terminal {
     DEFAULT("DEFAULT"),
     IF("IF"),
     GUARDEDIF("GUARDEDIF"),
+    GUARDEDENDIF("GUARDEDENDIF"),
     ELSE("ELSE"),
     ELSEIF("ELSEIF"),
     ENDIF("ENDIF"),

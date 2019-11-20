@@ -448,9 +448,15 @@ public class Parser {
                 ConcreteTree.OptElse optelse1 = parseOptElse(context, idendation + 1);
                 consumeTerminal(context, Terminal.ENDIF);
                 return new ConcreteTree.CmdIf(expr3, cpscmd1, repelseif, optelse1, idendation);
+            case GUARDEDIF:
+                consumeTerminal(context, Terminal.GUARDEDIF);
+                ConcreteTree.Expr expr4 = parseExpr(context, idendation + 1);
+                parseArrowTerm(context, idendation);
+                parseCpsArrowTerm(context, idendation);
+                consumeTerminal(context, Terminal.GUARDEDENDIF);
             case SWITCH:
                 consumeTerminal(context, Terminal.SWITCH);
-                ConcreteTree.Expr expr4 = parseExpr(context, idendation + 1);
+                ConcreteTree.Expr expr5 = parseExpr(context, idendation + 1);
                 consumeTerminal(context, Terminal.CASE);
                 Tokens.LiteralToken literal1 = (Tokens.LiteralToken) consumeTerminal(context, Terminal.LITERAL);
                 consumeTerminal(context, Terminal.THEN);
@@ -458,14 +464,14 @@ public class Parser {
                 ConcreteTree.RepCase repcase1 = parseRepCase(context, idendation + 1);
                 ConcreteTree.OptDefault optdefault1 = parseOptDefault(context, idendation + 1);
                 consumeTerminal(context, Terminal.ENDSWITCH);
-                return new ConcreteTree.CmdSwitch(expr4, literal1, cpscmd2, repcase1, optdefault1, idendation);
+                return new ConcreteTree.CmdSwitch(expr5, literal1, cpscmd2, repcase1, optdefault1, idendation);
             case WHILE:
                 consumeTerminal(context, Terminal.WHILE);
-                ConcreteTree.Expr expr5 = parseExpr(context, idendation + 1);
+                ConcreteTree.Expr expr6 = parseExpr(context, idendation + 1);
                 consumeTerminal(context, Terminal.DO);
                 ConcreteTree.CpsCmd cpscmd3 = parseCpsCmd(context, idendation + 1);
                 consumeTerminal(context, Terminal.ENDWHILE);
-                return new ConcreteTree.CmdWhile(expr5, cpscmd3, idendation);
+                return new ConcreteTree.CmdWhile(expr6, cpscmd3, idendation);
             case CALL:
                 consumeTerminal(context, Terminal.CALL);
                 Tokens.IdentifierToken identifier1 = (Tokens.IdentifierToken) consumeTerminal(context, Terminal.IDENT);
@@ -474,12 +480,12 @@ public class Parser {
                 return new ConcreteTree.CmdCall(identifier1, exprlist1, optglobinits1, idendation);
             case DEBUGIN:
                 consumeTerminal(context, Terminal.DEBUGIN);
-                ConcreteTree.Expr expr6 = parseExpr(context, idendation + 1);
-                return new ConcreteTree.CmdDebugIn(expr6, idendation);
+                ConcreteTree.Expr expr7 = parseExpr(context, idendation + 1);
+                return new ConcreteTree.CmdDebugIn(expr7, idendation);
             case DEBUGOUT:
                 consumeTerminal(context, Terminal.DEBUGOUT);
-                ConcreteTree.Expr expr7 = parseExpr(context, idendation + 1);
-                return new ConcreteTree.CmdDebugOut(expr7, idendation);
+                ConcreteTree.Expr expr8 = parseExpr(context, idendation + 1);
+                return new ConcreteTree.CmdDebugOut(expr8, idendation);
             default:
                 throw new ParserException("Invalid terminal in cmd(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
         }
@@ -493,6 +499,7 @@ public class Parser {
             case WHILE:
             case SWITCH:
             case IF:
+            case GUARDEDIF:
             case LPAREN:
             case ADDOPR:
             case NOT:
@@ -519,6 +526,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -542,6 +550,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -566,6 +575,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -608,6 +618,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -652,6 +663,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -697,6 +709,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -743,6 +756,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -802,6 +816,7 @@ public class Parser {
             case ENDIF:
             case ELSE:
             case ELSEIF:
+            case GUARDEDENDIF:
             case ENDPROC:
             case ENDFUN:
             case ENDPROGRAM:
@@ -861,6 +876,23 @@ public class Parser {
         }
     }
 
+    private ConcreteTree.ArrowTerm parseArrowTerm (Context context, int identation) throws ParserException {
+        consumeTerminal(context, Terminal.GUARDOPR);
+        //PARSE EXPRESSION
+        consumeTerminal(context, Terminal.ARROWOPR);
+        //PARSE CpsCmd
+        return null;
+    }
+
+    private ConcreteTree.CpsArrowTerm parseCpsArrowTerm (Context context, int identation) throws ParserException {
+        if (context.getTerminal() == Terminal.GUARDEDENDIF) {
+          return null;
+        }
+        parseArrowTerm(context, identation + 1);
+        //ConcreteTree.CpsArrowTerm;
+        return null;
+    }
+
     private ConcreteTree.RepExprList parseRepExprList(Context context, int idendation) throws ParserException {
         switch (context.getTerminal()) {
             case COMMA:
@@ -874,6 +906,7 @@ public class Parser {
             case DEFAULT:
             case CASE:
             case ENDIF:
+            case GUARDEDENDIF:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
