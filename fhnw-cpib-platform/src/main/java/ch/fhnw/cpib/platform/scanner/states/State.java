@@ -97,6 +97,9 @@ public abstract class State {
         throw new ScannerException("Unable to handle a " + character + " on " + row + ":" + column);
     }
 
+    public State handleBackSlash(Character character) throws ScannerException{
+        throw new ScannerException("Unable to handle a " + character + " on " + row + ":" + column);
+    }
     public State handleOperator(Character character) throws ScannerException {
         throw new ScannerException("Unable to handle a " + character + " on " + row + ":" + column);
     }

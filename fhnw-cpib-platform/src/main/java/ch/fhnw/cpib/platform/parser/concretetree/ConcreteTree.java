@@ -1190,6 +1190,38 @@ public class ConcreteTree {
         }
     }
 
+    public static class CmdIfGuarded extends Cmd {
+
+        private final Expr expr;
+        //GuardIF (Terminal)
+        //cpsArrowOpr (Non Terminal)
+        //GuardIfEnd (Terminal)
+
+        private final GuardIf cpscmd;
+
+        private final RepElseif repelseif;
+
+        private final  optelse;
+
+        public CmdIfGuarded(GuardedIf if,bodyGuardedIf guardIf, GuardedEndIf) {
+            super(idendation);
+            this.expr = expr;
+            this.cpscmd = cpscmd;
+            this.repelseif = repelseif;
+            this.optelse = optelse;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<CmdIf>") + expr + cpscmd + repelseif + optelse + getHead("</CmdIf>");
+        }
+
+        /*@Override
+        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
+            return new AbstractTree.CondCmd(expr.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), repelseif.toAbstract(idendation + 1), optelse.toAbstract(idendation), repcpscmd.toAbstract(idendation + 1), idendation);
+        }*/
+    }
+
     public static class CmdSwitch extends Cmd {
 
         private final Expr expr;

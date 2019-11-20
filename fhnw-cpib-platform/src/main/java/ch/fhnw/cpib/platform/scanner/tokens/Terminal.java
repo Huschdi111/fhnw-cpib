@@ -36,6 +36,7 @@ public enum Terminal {
     CASE("CASE"),
     DEFAULT("DEFAULT"),
     IF("IF"),
+    GUARDEDIF("GUARDEDIF"),
     ELSE("ELSE"),
     ELSEIF("ELSEIF"),
     ENDIF("ENDIF"),

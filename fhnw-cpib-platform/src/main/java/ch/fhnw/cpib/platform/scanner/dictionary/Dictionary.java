@@ -33,6 +33,7 @@ public class Dictionary {
         tokens.put("fun", new Tokens.Token(Terminal.FUN));
         tokens.put("global", new Tokens.Token(Terminal.GLOBAL));
         tokens.put("if", new Tokens.Token(Terminal.IF));
+        tokens.put("if:", new Tokens.Token(Terminal.GUARDEDIF));
         tokens.put("init", new Tokens.Token(Terminal.INIT));
         tokens.put("local", new Tokens.Token(Terminal.LOCAL));
         tokens.put("not", new Tokens.Token(Terminal.NOT));
@@ -72,7 +73,7 @@ public class Dictionary {
         tokens.put("copy", new Tokens.MechModeToken(Terminal.MECHMODE, Tokens.MechModeToken.MechMode.COPY));
         tokens.put("ref", new Tokens.MechModeToken(Terminal.MECHMODE, Tokens.MechModeToken.MechMode.REF));
 
-        // All all operator tokens
+        // All operator tokens
         tokens.put("+", new Tokens.AddOprToken(Terminal.ADDOPR, Tokens.AddOprToken.AddOpr.PLUS));
         tokens.put("-", new Tokens.AddOprToken(Terminal.ADDOPR, Tokens.AddOprToken.AddOpr.MINUS));
         tokens.put("&&", new Tokens.BoolOprToken(Terminal.BOOLOPR, Tokens.BoolOprToken.BoolOpr.AND));

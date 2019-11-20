@@ -44,11 +44,11 @@ public class Scanner {
                 state = state.handleDash(element);
             } else if (element == '/') {
                 state = state.handleSlash(element);
-            } else if (element == ' ') {
+            }else if (element == ' ') {
                 state = state.handleSpace(element);
             } else if (element == '_') {
                 state = state.handleUnderScore(element);
-            } else if (String.valueOf(element).matches("[(),;:=*+-/<>&?!|]")) {
+            }else if (String.valueOf(element).matches("[(),;:=*+-/<>&?!|]")) {
                 state = state.handleOperator(element);
             } else {
                 state = state.handleUnknown(element);
