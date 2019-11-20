@@ -882,6 +882,91 @@ public class AbstractTree {
         }
     }
 
+
+    public static class GuardedCondCmd extends Cmd {
+
+        public final ArrowCmd arrowCmd;
+        public final RepArrowCmd repArrowCmd;
+
+        public GuardedCondCmd(Expression expression, ArrowCmd arrowCmd, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
+            super(nextcmd, idendation);
+            this.arrowCmd = arrowCmd;
+            this.repArrowCmd = repArrowCmd;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<GuardedCondCmd>") + getHead("</GuardedCondCmd>");
+        }
+
+        @Override
+        public void checkCode(Checker checker) throws CheckerException {
+
+        }
+
+        @Override
+        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
+
+        }
+    }
+
+    public static class RepArrowCmd extends Cmd {
+
+        public final Expression expression;
+
+        public final RepArrowCmd repArrowCmd;
+
+        public RepArrowCmd(Expression expression, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
+            super(nextcmd, idendation);
+            this.expression = expression;
+            this.repArrowCmd = repArrowCmd;
+            //this.cmd = cmd;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<RepArrowCmd>") + getHead("</RepArrowCmd>");
+        }
+
+        @Override
+        public void checkCode(Checker checker) throws CheckerException {
+
+        }
+
+        @Override
+        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
+
+        }
+    }
+
+    public static class ArrowCmd extends Cmd {
+
+        public final Expression expression;
+        public final Cmd cmd;
+
+        public ArrowCmd(Expression expression, Cmd cmd, Cmd nextcmd, int idendation) {
+            super(nextcmd, idendation);
+            this.expression = expression;
+            this.cmd = cmd;
+            //this.cmd = cmd;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<ArrowCmd>") + getHead("</ArrowCmd>");
+        }
+
+        @Override
+        public void checkCode(Checker checker) throws CheckerException {
+
+        }
+
+        @Override
+        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
+
+        }
+    }
+
     public static class RepCondCmd extends Cmd {
 
         public final Expression expression;
