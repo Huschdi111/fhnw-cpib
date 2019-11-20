@@ -1,5 +1,7 @@
 package ch.fhnw.cpib.platform.parser.concretetree;
 
+import ch.fhnw.cpib.platform.checker.Checker;
+import ch.fhnw.cpib.platform.checker.CheckerException;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
@@ -1189,37 +1191,76 @@ public class ConcreteTree {
             return new AbstractTree.CondCmd(expr.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), repelseif.toAbstract(idendation + 1), optelse.toAbstract(idendation), repcpscmd.toAbstract(idendation + 1), idendation);
         }
     }
-
+    /*GuardedIF Class Hierarchie
+    * CmdIfGuarded
+    * - ArrowCmd
+    * --
+    * - CpsArrowCmd*/
     public static class CmdIfGuarded extends Cmd {
+        //arrowCmd
+        private final ArrowTerm arrowTerm;
+        //arrowCmd
+        private final CpsArrowTerm cpsArrowTerm;
 
-        private final Expr expr;
-        //GuardIF (Terminal)
-        //cpsArrowOpr (Non Terminal)
-        //GuardIfEnd (Terminal)
-
-        private final GuardIf cpscmd;
-
-        private final RepElseif repelseif;
-
-        private final  optelse;
-
-        public CmdIfGuarded(GuardedIf if,bodyGuardedIf guardIf, GuardedEndIf) {
+        public CmdIfGuarded(ArrowTerm arrowTerm, CpsArrowTerm cpsArrowTerm, int idendation) {
             super(idendation);
-            this.expr = expr;
-            this.cpscmd = cpscmd;
-            this.repelseif = repelseif;
-            this.optelse = optelse;
+            this.arrowTerm = arrowTerm;
+            this.cpsArrowTerm = cpsArrowTerm;
         }
 
         @Override
         public String toString() {
-            return getHead("<CmdIf>") + expr + cpscmd + repelseif + optelse + getHead("</CmdIf>");
+            return getHead("<CmdIfGuarded>") + arrowTerm + cpsArrowTerm + getHead("</CmdIfGuarded>");
         }
 
         /*@Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
             return new AbstractTree.CondCmd(expr.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), repelseif.toAbstract(idendation + 1), optelse.toAbstract(idendation), repcpscmd.toAbstract(idendation + 1), idendation);
         }*/
+    }
+
+    public static class ArrowTerm extends ConcreteNode {
+        private final Expr expr;
+
+        private final CpsCmd cpsCmd;
+
+        public ArrowTerm(Expr expr, CpsCmd cpsCmd, int indentation) {
+            super(indentation);
+            this.expr = expr;
+            this.cpsCmd = cpsCmd;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<ArrowTerm>") + expr +  cpsCmd + getHead("</ArrowTerm>");
+        }
+        @Override
+        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation)  {
+            //TODO lukas
+        }
+    }
+
+    public static class CpsArrowTerm extends ConcreteNode {
+
+        private final ArrowTerm arrowTerm;
+
+        private final CpsArrowTerm cpsArrowTerm;
+
+        public CpsArrowTerm(ArrowTerm arrowTerm, CpsArrowTerm cpsArrowTerm, int indentation) {
+            super(indentation);
+            this.arrowTerm = arrowTerm;
+            this.cpsArrowTerm = cpsArrowTerm;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<CpsArrowTerm>") + arrowTerm +  cpsArrowTerm + getHead("</CpsArrowTerm>");
+        }
+
+        @Override
+        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
+            //TODO
+        }
     }
 
     public static class CmdSwitch extends Cmd {
