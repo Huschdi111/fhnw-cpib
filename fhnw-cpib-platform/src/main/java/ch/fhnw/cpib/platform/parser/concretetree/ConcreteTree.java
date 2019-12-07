@@ -1197,18 +1197,16 @@ public class ConcreteTree {
     * --
     * - CpsArrowCmd*/
     public static class CmdIfGuarded extends Cmd {
-        private final ArrowTerm arrowTerm;
         private final CpsArrowTerm cpsArrowTerm;
 
-        public CmdIfGuarded(ArrowTerm arrowTerm, CpsArrowTerm cpsArrowTerm, int idendation) {
+        public CmdIfGuarded(CpsArrowTerm cpsArrowTerm, int idendation) {
             super(idendation);
-            this.arrowTerm = arrowTerm;
             this.cpsArrowTerm = cpsArrowTerm;
         }
 
         @Override
         public String toString() {
-            return getHead("<CmdIfGuarded>") + arrowTerm + cpsArrowTerm + getHead("</CmdIfGuarded>");
+            return getHead("<CmdIfGuarded>") +  cpsArrowTerm + getHead("</CmdIfGuarded>");
         }
 
         @Override
@@ -1219,7 +1217,6 @@ public class ConcreteTree {
 
     public static class ArrowTerm extends ConcreteNode {
         private final Expr expr;
-
         private final CpsCmd cpsCmd;
 
         public ArrowTerm(Expr expr, CpsCmd cpsCmd, int indentation) {
