@@ -1,5 +1,6 @@
 package ch.fhnw.cpib.platform.parser;
 
+import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.parser.concretetree.Context;
 import ch.fhnw.cpib.platform.parser.exception.ParserException;
@@ -450,10 +451,10 @@ public class Parser {
                 return new ConcreteTree.CmdIf(expr3, cpscmd1, repelseif, optelse1, idendation);
             case GUARDEDIF:
                 consumeTerminal(context, Terminal.GUARDEDIF);
-                ConcreteTree.Expr expr4 = parseExpr(context, idendation + 1);
-                parseArrowTerm(context, idendation);
-                parseCpsArrowTerm(context, idendation);
+                ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context, idendation);
+                ConcreteTree.CpsArrowTerm cpsArrowTerm = parseCpsArrowTerm(context, idendation);
                 consumeTerminal(context, Terminal.GUARDEDENDIF);
+                return new ConcreteTree.CmdIfGuarded(arrowTerm,cpsArrowTerm,idendation);
             case SWITCH:
                 consumeTerminal(context, Terminal.SWITCH);
                 ConcreteTree.Expr expr5 = parseExpr(context, idendation + 1);
@@ -489,6 +490,12 @@ public class Parser {
             default:
                 throw new ParserException("Invalid terminal in cmd(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
         }
+    }
+
+    private ConcreteTree.CpsArrowTerm parseCpsArrowTerm(Context context, int idendation) throws ParserException {
+        ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context, idendation);
+        ConcreteTree.RepArrowTerm repArrowTerm = parseRepArrowTerm(context,idendation);
+        return new ConcreteTree.CpsArrowTerm(arrowTerm,repArrowTerm,idendation);
     }
 
     private ConcreteTree.CpsCmd parseCpsCmd(Context context, int idendation) throws ParserException {
@@ -876,21 +883,27 @@ public class Parser {
         }
     }
 
-    private ConcreteTree.ArrowTerm parseArrowTerm (Context context, int identation) throws ParserException {
+    private ConcreteTree.ArrowTerm parseArrowTerm (Context context, int indentation) throws ParserException {
+        if(context.getTerminal() != Terminal.GUARDOPR) throw new ParserException("Invalid terminal in ArrowTerm(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
         consumeTerminal(context, Terminal.GUARDOPR);
-        //PARSE EXPRESSION
+        ConcreteTree.Expr expr = parseExpr(context, indentation + 1);
+        if(context.getTerminal() != Terminal.ARROWOPR) throw new ParserException("Invalid terminal in ArrowTerms(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
         consumeTerminal(context, Terminal.ARROWOPR);
-        //PARSE CpsCmd
-        return null;
+        ConcreteTree.CpsCmd cpsCmd = parseCpsCmd(context,indentation + 1);
+        return new ConcreteTree.ArrowTerm(expr,cpsCmd,indentation);
     }
 
-    private ConcreteTree.CpsArrowTerm parseCpsArrowTerm (Context context, int identation) throws ParserException {
-        if (context.getTerminal() == Terminal.GUARDEDENDIF) {
-          return null;
+    private ConcreteTree.RepArrowTerm parseRepArrowTerm(Context context, int identation) throws ParserException {
+        switch (context.getTerminal()) {
+            case GUARDEDENDIF:
+                return new ConcreteTree.RepArrowTermEpsilon(identation);
+            case GUARDOPR:
+                ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context,identation + 1);
+                ConcreteTree.RepArrowTerm repArrowTerm =  parseRepArrowTerm(context, identation + 1);
+                return new ConcreteTree.RepArrowTermMult(arrowTerm,repArrowTerm,identation);
+            default:
+                throw new ParserException("Invalid terminal in repArrowTerm(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
         }
-        parseArrowTerm(context, identation + 1);
-        //ConcreteTree.CpsArrowTerm;
-        return null;
     }
 
     private ConcreteTree.RepExprList parseRepExprList(Context context, int idendation) throws ParserException {

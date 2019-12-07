@@ -1197,9 +1197,7 @@ public class ConcreteTree {
     * --
     * - CpsArrowCmd*/
     public static class CmdIfGuarded extends Cmd {
-        //arrowCmd
         private final ArrowTerm arrowTerm;
-        //arrowCmd
         private final CpsArrowTerm cpsArrowTerm;
 
         public CmdIfGuarded(ArrowTerm arrowTerm, CpsArrowTerm cpsArrowTerm, int idendation) {
@@ -1236,21 +1234,68 @@ public class ConcreteTree {
         }
     }
 
-    public static class CpsArrowTerm extends ConcreteNode {
+    public static abstract class RepArrowTerm extends ConcreteNode {
+
+        RepArrowTerm(int idendation) {
+            super(idendation);
+        }
+
+        public abstract AbstractTree.ArrowCmd toAbstract(int idendation);
+    }
+
+    public static class RepArrowTermMult extends RepArrowTerm {
 
         private final ArrowTerm arrowTerm;
+        private final RepArrowTerm repArrowTerm;
 
-        private final CpsArrowTerm cpsArrowTerm;
-
-        public CpsArrowTerm(ArrowTerm arrowTerm, CpsArrowTerm cpsArrowTerm, int indentation) {
+        public RepArrowTermMult(ArrowTerm arrowTerm, RepArrowTerm repArrowTerm, int indentation) {
             super(indentation);
             this.arrowTerm = arrowTerm;
-            this.cpsArrowTerm = cpsArrowTerm;
+            this.repArrowTerm = repArrowTerm;
         }
 
         @Override
         public String toString() {
-            return getHead("<CpsArrowTerm>") + arrowTerm +  cpsArrowTerm + getHead("</CpsArrowTerm>");
+            return getHead("<RepArrowTermMult>") + arrowTerm + repArrowTerm + getHead("</RepArrowTermMult>");
+        }
+
+        @Override
+        public AbstractTree.ArrowCmd toAbstract(int idendation) {
+            return null;
+        }
+    }
+
+    public static class RepArrowTermEpsilon extends RepArrowTerm {
+
+        public RepArrowTermEpsilon(int idendation) {
+            super(idendation);
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<RepArrowTermEpsilon/>");
+        }
+
+        @Override
+        public AbstractTree.ArrowCmd toAbstract(int idendation) {
+            return null;
+        }
+    }
+
+    public static class CpsArrowTerm extends ConcreteNode {
+
+        private final ArrowTerm arrowTerm;
+        private final RepArrowTerm repArrowTerm;
+
+        public CpsArrowTerm(ArrowTerm arrowTerm, RepArrowTerm repArrowTerm, int indentation) {
+            super(indentation);
+            this.arrowTerm = arrowTerm;
+            this.repArrowTerm = repArrowTerm;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<CpsArrowTerm>") + arrowTerm + repArrowTerm + getHead("</CpsArrowTerm>");
         }
     }
 
@@ -1429,6 +1474,8 @@ public class ConcreteTree {
             return cmd.toAbstract(repcpscmd, idendation);
         }
     }
+
+
 
     public static class RepCpsCmdEpsilon extends RepCpsCmd {
 
