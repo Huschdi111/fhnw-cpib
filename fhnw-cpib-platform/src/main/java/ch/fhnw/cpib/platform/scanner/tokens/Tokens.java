@@ -339,7 +339,6 @@ public class Tokens {
     }
 
     public static class SentinelToken extends Token {
-
         public SentinelToken(Terminal terminal) {
             super(terminal);
         }

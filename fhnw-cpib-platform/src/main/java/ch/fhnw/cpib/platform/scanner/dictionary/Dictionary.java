@@ -33,8 +33,8 @@ public class Dictionary {
         tokens.put("fun", new Tokens.Token(Terminal.FUN));
         tokens.put("global", new Tokens.Token(Terminal.GLOBAL));
         tokens.put("if", new Tokens.Token(Terminal.IF));
-        tokens.put("if:", new Tokens.Token(Terminal.GUARDEDIF));
-        tokens.put(":endif", new Tokens.Token(Terminal.GUARDEDENDIF));
+        tokens.put("guardif", new Tokens.Token(Terminal.GUARDEDIF));
+        tokens.put("endguardif", new Tokens.Token(Terminal.GUARDEDENDIF));
         tokens.put("init", new Tokens.Token(Terminal.INIT));
         tokens.put("local", new Tokens.Token(Terminal.LOCAL));
         tokens.put("not", new Tokens.Token(Terminal.NOT));
@@ -46,6 +46,8 @@ public class Dictionary {
         tokens.put("then", new Tokens.Token(Terminal.THEN));
         tokens.put("while", new Tokens.Token(Terminal.WHILE));
         tokens.put("sentinel", new Tokens.Token(Terminal.SENTINEL));
+        tokens.put("=>", new Tokens.Token(Terminal.ARROWOPR));
+        tokens.put("|", new Tokens.Token(Terminal.GUARDOPR));
 
         // Add all regular legacy tokens
         tokens.put("?", new Tokens.Token(Terminal.DEBUGIN));

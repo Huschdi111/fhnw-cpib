@@ -55,10 +55,8 @@ public class Scanner {
             }
             state.setColumn(state.getColumn() + 1);
         }
-
         // Add final sentinel token
         tokenlist.addToken(dictionary.lookupSentinel(state));
-
         return tokenlist;
     }
 }

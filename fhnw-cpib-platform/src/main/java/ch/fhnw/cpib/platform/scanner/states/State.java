@@ -82,7 +82,7 @@ public abstract class State {
     }
 
     public State handleSpace(Character character) throws ScannerException {
-        throw new ScannerException("Unable to handle a space");
+        throw new ScannerException("Unable to handle a space" + character + "on " + row + ": " + column);
     }
 
     public State handleUnderScore(Character character) throws ScannerException {
@@ -100,6 +100,7 @@ public abstract class State {
     public State handleBackSlash(Character character) throws ScannerException{
         throw new ScannerException("Unable to handle a " + character + " on " + row + ":" + column);
     }
+
     public State handleOperator(Character character) throws ScannerException {
         throw new ScannerException("Unable to handle a " + character + " on " + row + ":" + column);
     }
