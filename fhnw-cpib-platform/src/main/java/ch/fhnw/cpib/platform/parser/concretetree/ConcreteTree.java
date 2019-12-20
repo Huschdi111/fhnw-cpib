@@ -1213,7 +1213,7 @@ public class ConcreteTree {
 
         @Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
-            return null;
+            return new AbstractTree.GuardedCondCmd(repcpscmd.toAbstract(idendation),.toAbstract(idendation+1), idendation+1);
         }
     }
 
