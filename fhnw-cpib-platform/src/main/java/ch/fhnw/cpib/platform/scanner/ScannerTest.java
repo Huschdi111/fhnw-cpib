@@ -7,6 +7,7 @@ public class ScannerTest {
         Scanner scanner = new Scanner();
         String s = "program Assoc()\n" +
             "  global x:int32\n" +
+            " do \n" +
             "guardif \n" +
             "| x==1 => x := 2 endguardif" +
             "//debugout x divE (2 divE 2) ;\n" +

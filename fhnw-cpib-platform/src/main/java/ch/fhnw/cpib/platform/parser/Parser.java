@@ -10,9 +10,6 @@ import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 
 public class Parser {
 
-    public Parser() {
-    }
-
     public ConcreteTree.Program parseTokenList(TokenList tokenlist) throws ParserException {
         // Get the first token to start with
         tokenlist.resetCounter();
@@ -451,10 +448,9 @@ public class Parser {
                 return new ConcreteTree.CmdIf(expr3, cpscmd1, repelseif, optelse1, idendation);
             case GUARDEDIF:
                 consumeTerminal(context, Terminal.GUARDEDIF);
-                ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context, idendation);
-                ConcreteTree.CpsArrowTerm cpsArrowTerm = parseCpsArrowTerm(context, idendation);
+                ConcreteTree.CpsArrowTerm cpsArrowTerm = parseCpsArrowTerm(context,idendation);
                 consumeTerminal(context, Terminal.GUARDEDENDIF);
-                return new ConcreteTree.CmdIfGuarded(arrowTerm,cpsArrowTerm,idendation);
+                return new ConcreteTree.CmdIfGuarded(cpsArrowTerm,idendation);
             case SWITCH:
                 consumeTerminal(context, Terminal.SWITCH);
                 ConcreteTree.Expr expr5 = parseExpr(context, idendation + 1);
@@ -493,7 +489,7 @@ public class Parser {
     }
 
     private ConcreteTree.CpsArrowTerm parseCpsArrowTerm(Context context, int idendation) throws ParserException {
-        ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context, idendation);
+        ConcreteTree.ArrowTerm arrowTerm = parseArrowTerm(context,idendation);
         ConcreteTree.RepArrowTerm repArrowTerm = parseRepArrowTerm(context,idendation);
         return new ConcreteTree.CpsArrowTerm(arrowTerm,repArrowTerm,idendation);
     }
@@ -620,6 +616,7 @@ public class Parser {
             case RPAREN:
             case DO:
             case THEN:
+            case ARROWOPR:
             case ENDWHILE:
             case ENDSWITCH:
             case DEFAULT:
@@ -671,6 +668,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case ARROWOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -717,6 +715,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case ARROWOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -761,6 +760,7 @@ public class Parser {
             case ENDWHILE:
             case ENDSWITCH:
             case DEFAULT:
+            case ARROWOPR:
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
