@@ -1210,7 +1210,7 @@ public class ConcreteTree {
         }
 
         @Override
-        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
+        public AbstractTree.GuardedCondCmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
             return null;
         }
     }
@@ -1228,6 +1228,10 @@ public class ConcreteTree {
         @Override
         public String toString() {
             return getHead("<ArrowTerm>") + expr +  cpsCmd + getHead("</ArrowTerm>");
+        }
+
+        public AbstractTree.ArrowCmd toAbstract(int identation) {
+            return new AbstractTree.ArrowCmd(expr.toAbstract(identation), cpsCmd.toAbstract(identation),identation);
         }
     }
 
@@ -1279,7 +1283,7 @@ public class ConcreteTree {
         }
     }
 
-    public static class CpsArrowTerm extends ConcreteNode {
+    public static class CpsArrowTerm extends Cmd {
 
         private final ArrowTerm arrowTerm;
         private final RepArrowTerm repArrowTerm;
@@ -1293,6 +1297,11 @@ public class ConcreteTree {
         @Override
         public String toString() {
             return getHead("<CpsArrowTerm>") + arrowTerm + repArrowTerm + getHead("</CpsArrowTerm>");
+        }
+
+        @Override
+        public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
+            return null;
         }
     }
 

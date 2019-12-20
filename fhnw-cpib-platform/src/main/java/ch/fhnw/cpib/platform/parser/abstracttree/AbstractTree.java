@@ -1,6 +1,7 @@
 package ch.fhnw.cpib.platform.parser.abstracttree;
 
 import ch.fhnw.cpib.platform.checker.*;
+import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 import com.squareup.javapoet.FieldSpec;
@@ -888,7 +889,7 @@ public class AbstractTree {
         public final ArrowCmd arrowCmd;
         public final RepArrowCmd repArrowCmd;
 
-        public GuardedCondCmd(Expression expression, ArrowCmd arrowCmd, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
+        public GuardedCondCmd( ArrowCmd arrowCmd, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.arrowCmd = arrowCmd;
             this.repArrowCmd = repArrowCmd;
@@ -903,7 +904,6 @@ public class AbstractTree {
         public void checkCode(Checker checker) throws CheckerException {
 
         }
-
         @Override
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
 
@@ -913,12 +913,13 @@ public class AbstractTree {
     public static class RepArrowCmd extends Cmd {
 
         public final Expression expression;
-
+        public final ArrowCmd arrowCmd;
         public final RepArrowCmd repArrowCmd;
 
-        public RepArrowCmd(Expression expression, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
+        public RepArrowCmd(Expression expression, ArrowCmd arrowCmd, RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.expression = expression;
+            this.arrowCmd = arrowCmd;
             this.repArrowCmd = repArrowCmd;
             //this.cmd = cmd;
         }
@@ -944,10 +945,10 @@ public class AbstractTree {
         public final Expression expression;
         public final Cmd cmd;
 
-        public ArrowCmd(Expression expression, Cmd cmd, Cmd nextcmd, int idendation) {
+        public ArrowCmd(Expression expression,Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.expression = expression;
-            this.cmd = cmd;
+            this.cmd = nextcmd;
             //this.cmd = cmd;
         }
 
@@ -958,12 +959,10 @@ public class AbstractTree {
 
         @Override
         public void checkCode(Checker checker) throws CheckerException {
-
         }
 
         @Override
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-
         }
     }
 

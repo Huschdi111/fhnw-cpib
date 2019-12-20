@@ -1,6 +1,7 @@
 package ch.fhnw.cpib.platform.parser;
 
 import ch.fhnw.cpib.platform.checker.Symbol;
+import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.parser.exception.ParserException;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.TokenList;
@@ -31,7 +32,8 @@ public class ParserTest {
         tokenList.addToken(new Tokens.Token(Terminal.GUARDEDENDIF));
         tokenList.addToken(new Tokens.Token(Terminal.ENDPROGRAM));
         tokenList.addToken(new Tokens.Token(Terminal.SENTINEL));
-        parser.parseTokenList(tokenList);
+        ConcreteTree.Program concreteTree = parser.parseTokenList(tokenList);
+        System.out.println(concreteTree.toString());
 
     }
 }
