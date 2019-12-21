@@ -901,7 +901,7 @@ public class AbstractTree {
 
         @Override
         public void checkCode(Checker checker) throws CheckerException {
-
+            repArrowCmd.checkCode(checker);
         }
 
         @Override
@@ -932,7 +932,17 @@ public class AbstractTree {
 
         @Override
         public void checkCode(Checker checker) throws CheckerException {
-
+            //check expr return type is from type BOOL
+            ExpressionInfo exprinfo = expression.checkCode(checker);
+            if (exprinfo.getType() != Tokens.TypeToken.Type.BOOL) {
+                throw new CheckerException("IF condition needs to be BOOL. Current type: " + exprinfo.getType());
+            }
+            if (cmd != null) {
+                cmd.checkCode(checker);
+            }
+            if (getNextCmd() != null) {
+                getNextCmd().checkCode(checker);
+            }
         }
 
         @Override

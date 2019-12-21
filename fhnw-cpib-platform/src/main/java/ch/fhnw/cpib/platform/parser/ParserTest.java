@@ -1,5 +1,6 @@
 package ch.fhnw.cpib.platform.parser;
 
+import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.Symbol;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
@@ -24,9 +25,9 @@ public class ParserTest {
         tokenList.addToken(new Tokens.Token(Terminal.GUARDEDIF));
 
         tokenList.addToken(new Tokens.Token(Terminal.GUARDOPR));
-        tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
-        tokenList.addToken(new Tokens.RelOprToken(Terminal.RELOPR,Tokens.RelOprToken.RelOpr.EQ));
-        tokenList.addToken(new Tokens.LiteralToken("1",Terminal.LITERAL));
+        /*tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
+        tokenList.addToken(new Tokens.AddOprToken(Terminal.ADDOPR,Tokens.AddOprToken.AddOpr.PLUS));*/
+        tokenList.addToken(new Tokens.LiteralToken("5",Terminal.LITERAL));
         tokenList.addToken(new Tokens.Token(Terminal.ARROWOPR));
         tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
         tokenList.addToken(new Tokens.Token(Terminal.BECOMES));
@@ -47,6 +48,12 @@ public class ParserTest {
         ConcreteTree.Program prog = parser.parseTokenList(tokenList);
         AbstractTree.Program absProg =  prog.toAbstract();
         System.out.println(absProg.toString());
+        try{
+            absProg.checkCode(new Checker());
+        }catch(Exception e){
+            System.out.println("TypeChecker is angry");
+            e.printStackTrace();
+        }
 
     }
 }

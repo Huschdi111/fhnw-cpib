@@ -59,7 +59,7 @@ public class Compiler {
             System.out.println("Done");
             System.out.println();
 
-            // Generate the Java code
+            /*// Generate the Java code
             System.out.println("===== Generate Java code =====");
             String javacode = generator.generateJavaCode(abstractprogram);
             System.out.println(javacode);
@@ -89,9 +89,35 @@ public class Compiler {
         } catch (CheckerException exception) {
             System.out.println("During the checking process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        } catch (GeneratorException exception) {
+        } /*catch (GeneratorException exception) {
             System.out.println("During the generation process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        }
+        }*/
+    }
+
+    public static void main(String[] args) {
+
+        /*String content = "program Assoc()\n"
+            + "global b:bool; x:int32\n"
+            + " do \n"
+            + " b init := 2;"
+            + " x init := 1;\n"
+            + " if b then \n "
+            + "     x := x + 1\n"
+            + " else x := x + 2\n"
+            + " endif \n"
+            + "endprogram \n";*/
+        String content = "program Assoc()\n"
+            + "global b:bool; x:int32\n"
+            + " do \n"
+            + " b init := 2;"
+            + " x init := 1;\n"
+            + " guardif\n "
+            + "    | x == 2 => x := x + 1\n"
+            + "    | x + 1 => x := 2\n"
+            + " endguardif \n"
+            + "endprogram \n";
+
+        new Compiler().compileString(content);
     }
 }
