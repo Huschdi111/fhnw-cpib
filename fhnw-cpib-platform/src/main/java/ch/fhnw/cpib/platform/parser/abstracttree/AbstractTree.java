@@ -894,7 +894,9 @@ public class AbstractTree {
 
         @Override
         public String toString() {
-            return getHead("<GuardedCondCmd>") + getHead("</GuardedCondCmd>");
+            return getHead("<GuardedCondCmd>")
+                + repArrowCmd.toString()
+                + getHead("</GuardedCondCmd>");
         }
 
         @Override
@@ -922,7 +924,10 @@ public class AbstractTree {
 
         @Override
         public String toString() {
-            return getHead("<RepArrowCmd>") + getHead("</RepArrowCmd>");
+            return getHead("<RepArrowCmd>") + getHead(expression.toString())
+                + getHead(cmd.toString())
+                + (nextcmd != null ? nextcmd.toString() : getBody("<NoCmd/>"))
+                + getHead("</RepArrowCmd>");
         }
 
         @Override
