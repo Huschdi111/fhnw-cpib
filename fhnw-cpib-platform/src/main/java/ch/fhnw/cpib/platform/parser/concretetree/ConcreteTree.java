@@ -1191,11 +1191,7 @@ public class ConcreteTree {
             return new AbstractTree.CondCmd(expr.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), repelseif.toAbstract(idendation + 1), optelse.toAbstract(idendation), repcpscmd.toAbstract(idendation + 1), idendation);
         }
     }
-    /*GuardedIF Class Hierarchie
-    * CmdIfGuarded
-    * - ArrowCmd
-    * --
-    * - CpsArrowCmd*/
+
     public static class CmdIfGuarded extends Cmd {
         private final CpsArrowTerm cpsArrowTerm;
 
@@ -1211,7 +1207,7 @@ public class ConcreteTree {
 
         @Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
-            return new AbstractTree.GuardedCondCmd(repcpscmd.toAbstract(idendation),.toAbstract(idendation+1), idendation+1);
+            return new AbstractTree.GuardedCondCmd(cpsArrowTerm.toAbstract(idendation),repcpscmd.toAbstract(idendation), idendation);
         }
     }
 
@@ -1237,7 +1233,7 @@ public class ConcreteTree {
             super(idendation);
         }
 
-        public abstract AbstractTree.ArrowCmd toAbstract(int idendation);
+        public abstract AbstractTree.RepArrowCmd toAbstract(int idendation);
     }
 
     public static class RepArrowTermMult extends RepArrowTerm {
@@ -1257,8 +1253,8 @@ public class ConcreteTree {
         }
 
         @Override
-        public AbstractTree.ArrowCmd toAbstract(int idendation) {
-            return null;
+        public AbstractTree.RepArrowCmd toAbstract(int idendation) {
+            return new AbstractTree.RepArrowCmd(arrowTerm.expr.toAbstract(idendation + 1), arrowTerm.cpsCmd.toAbstract(idendation + 1), repArrowTerm.toAbstract(idendation), idendation);
         }
     }
 
@@ -1274,7 +1270,7 @@ public class ConcreteTree {
         }
 
         @Override
-        public AbstractTree.ArrowCmd toAbstract(int idendation) {
+        public AbstractTree.RepArrowCmd toAbstract(int idendation) {
             return null;
         }
     }
@@ -1294,6 +1290,12 @@ public class ConcreteTree {
         public String toString() {
             return getHead("<CpsArrowTerm>") + arrowTerm + repArrowTerm + getHead("</CpsArrowTerm>");
         }
+
+        public AbstractTree.RepArrowCmd toAbstract(int identation) {
+            return new AbstractTree.RepArrowCmd(arrowTerm.expr.toAbstract(identation + 1), arrowTerm.cpsCmd.toAbstract(identation + 1), repArrowTerm.toAbstract(identation), identation);
+        }
+
+
     }
 
     public static class CmdSwitch extends Cmd {
@@ -1471,8 +1473,6 @@ public class ConcreteTree {
             return cmd.toAbstract(repcpscmd, idendation);
         }
     }
-
-
 
     public static class RepCpsCmdEpsilon extends RepCpsCmd {
 
