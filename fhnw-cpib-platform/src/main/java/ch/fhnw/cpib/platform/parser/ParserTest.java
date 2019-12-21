@@ -22,6 +22,7 @@ public class ParserTest {
         tokenList.addToken(new Tokens.TypeToken(Terminal.TYPE, Tokens.TypeToken.Type.INT));
         tokenList.addToken(new Tokens.Token(Terminal.DO));
         tokenList.addToken(new Tokens.Token(Terminal.GUARDEDIF));
+
         tokenList.addToken(new Tokens.Token(Terminal.GUARDOPR));
         tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
         tokenList.addToken(new Tokens.RelOprToken(Terminal.RELOPR,Tokens.RelOprToken.RelOpr.EQ));
@@ -30,11 +31,22 @@ public class ParserTest {
         tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
         tokenList.addToken(new Tokens.Token(Terminal.BECOMES));
         tokenList.addToken(new Tokens.LiteralToken("2",Terminal.LITERAL));
+
+        tokenList.addToken(new Tokens.Token(Terminal.GUARDOPR));
+        tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
+        tokenList.addToken(new Tokens.RelOprToken(Terminal.RELOPR,Tokens.RelOprToken.RelOpr.EQ));
+        tokenList.addToken(new Tokens.LiteralToken("5",Terminal.LITERAL));
+        tokenList.addToken(new Tokens.Token(Terminal.ARROWOPR));
+        tokenList.addToken(new Tokens.IdentifierToken("x", Terminal.IDENT));
+        tokenList.addToken(new Tokens.Token(Terminal.BECOMES));
+        tokenList.addToken(new Tokens.LiteralToken("4",Terminal.LITERAL));
+
         tokenList.addToken(new Tokens.Token(Terminal.GUARDEDENDIF));
         tokenList.addToken(new Tokens.Token(Terminal.ENDPROGRAM));
         tokenList.addToken(new Tokens.Token(Terminal.SENTINEL));
         ConcreteTree.Program prog = parser.parseTokenList(tokenList);
         AbstractTree.Program absProg =  prog.toAbstract();
+        System.out.println(absProg.toString());
 
     }
 }

@@ -530,6 +530,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -623,6 +624,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -668,6 +670,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ARROWOPR:
             case ELSE:
             case ELSEIF:
@@ -715,6 +718,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ARROWOPR:
             case ELSE:
             case ELSEIF:
@@ -764,6 +768,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
@@ -920,6 +925,7 @@ public class Parser {
             case CASE:
             case ENDIF:
             case GUARDEDENDIF:
+            case GUARDOPR:
             case ELSE:
             case ELSEIF:
             case ENDPROC:
