@@ -1,5 +1,8 @@
 package ch.fhnw.cpib.platform.generator;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import ch.fhnw.cpib.platform.checker.*;
 import ch.fhnw.cpib.platform.javavm.*;
@@ -22,4 +25,66 @@ public class CompilerContext {
     //
     private static int stackAddressHelper = 0; //TODO what is this?
     //private static DeclarationProcedure declaration; //TODO what is this?
+
+
+    private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
+    //private static CodeArray tempcodeArray = new CodeArray(STORE_SIZE);
+
+    public static IVirtualMachine getVM() {
+        return vm;
+    }
+
+    public static HashMap<String, String[]> getprocIdentTable() {
+        return procidentTable;
+    }
+
+    public static void addprocIdentTable(String ident, String[] posMech) {
+        procidentTable.put(ident, posMech);
+    }
+
+    public static void addIdentTable(String name, int i) {
+        identTable.put(name, new Integer(i));
+    }
+
+    public static HashMap<String, Integer> getIdentTable() {
+        return identTable;
+    }
+
+    public static StoreTable getGlobalStoreTable() {
+        return globalStoreTable;
+    }
+
+    public static RoutineTable getRoutineTable() {
+        return routineTable;
+    }
+
+    public static Scope getScope() {
+        return scope;
+    }
+
+    public static int getstackAddressHelper() {
+        return stackAddressHelper;
+    }
+
+    public static void setstackAddressHelper(int offset) {
+        stackAddressHelper = stackAddressHelper + offset;
+    }
+
+
+    public static ICodeArray getcodeArray() {
+        return codeArray;
+    }
+
+    //public static ICodeArray gettempcodeArray() {
+    //    return tempcodeArray;
+    //}
+
+    public static void setScope(final Scope scope) {
+        CompilerContext.scope = scope;
+    }
+
+    private CompilerContext() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+
 }

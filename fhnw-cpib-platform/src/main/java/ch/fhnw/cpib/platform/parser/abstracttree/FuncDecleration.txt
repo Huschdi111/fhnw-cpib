@@ -1,0 +1,561 @@
+package ch.fhnw.cpib.platform.parser.abstracttree;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/*public abstract class Declaration {
+    protected final Declaration nextDecl;
+
+    public Declaration(Declaration next) {
+        this.nextDecl = next;
+    }
+
+    public String toString(String indent) {
+        return indent + "<Decl>\n"
+            + (nextDecl != null ? nextDecl.toString(indent + '\t') : indent + "\t<noNextElement/>\n") + indent
+            + "</Decl>\n";
+    }
+
+    public Declaration getNextDecl() {
+        return nextDecl;
+    }
+
+    public abstract void checkDeclaration() throws ContextError;
+
+    public abstract int check(int locals) throws ContextError;
+
+    public abstract int code(int loc) throws CodeTooSmallError;
+}
+
+public class DeclarationFunction extends Declaration {
+    private final Ident ident;
+    private final Parameter param;
+    private final DeclarationStore returnDecl;
+    private final GlobalImport globalImport;
+    private final Declaration decl;
+    private final Declaration nextDecl;
+    private final Cmd cmd;
+
+    public DeclarationFunction(Ident ident, Parameter param, DeclarationStore returnDecl, GlobalImport globalImport,
+                               Declaration decl, Cmd cmd, Declaration nextDecl) {
+        super(nextDecl);
+        this.ident = ident;
+        this.param = param;
+        this.returnDecl = returnDecl;
+        this.globalImport = globalImport;
+        this.decl = decl;
+        this.nextDecl = nextDecl;
+        this.cmd = cmd;
+    }
+
+    public String toString(String indent) {
+        //return indent + "<DeclFun>\n" + ident.toString(indent + '\t') + param.toString(indent + '\t')
+        //		+ returnDecl.toString(indent + '\t') + globImp.toString(indent + '\t') + dcl.toString(indent + '\t')
+        //		+ cmd.toString(indent + '\t') + super.toString(indent + '\t') + indent + "</DeclFun>\n";
+        return indent + "<DeclarationFunction>\n" + ident.toString(indent + '\t') + param.toString(indent + '\t') + returnDecl.toString(indent + '\t')
+            + (globalImport != null ? globalImport.toString(indent + '\t') : "")
+            + (decl != null ? decl.toString(indent + '\t') : "") + cmd.toString(indent + '\t')
+            + super.toString(indent + '\t') + indent + "</DeclarationFunction>\n";
+    }
+
+    public Cmd getCmd() {
+        return cmd;
+    }
+
+    public Ident getIdent() {
+        return ident;
+    }
+
+    public Declaration getDecl() {
+        return decl;
+    }
+
+    public Parameter getParam() {
+        return param;
+    }
+
+    public GlobalImport getGlobImp() {
+        return globalImport;
+    }
+
+    public DeclarationStore getReturnDecl() {
+        return returnDecl;
+    }
+
+    public void checkDeclaration() throws ContextError {
+        Function function = new Function(ident.getValue());
+        Compiler.setScope(function.getScope());
+
+        if (!Compiler.getRoutineTable().addRoutine(function)) {
+            throw new ContextError("Routine already declared: " + ident.getValue(), ident.getLine());
+        }
+
+        param.check(function);
+        Compiler.setScope(null);
+        if (nextDecl != null)
+            nextDecl.checkDeclaration();
+    }
+
+    public int check(int locals) throws ContextError {
+        if (locals >= 0) {
+            throw new ContextError("Function declarations are only allowed globally!", ident.getLine());
+        }
+        Routine routine = Compiler.getRoutineTable().getRoutine(ident.getValue());
+        Compiler.setScope(routine.getScope());
+        if (globalImport != null)
+            globalImport.check(routine);
+        int localsCount = param.calculateAddress(routine.getParamList().size(), 0);
+
+        if (decl != null)
+            decl.check(localsCount);
+
+        //cmd.check(false);
+        Compiler.setScope(null);
+        return -1;
+    }
+
+    public int code(int loc) throws CodeTooSmallError {
+        int loc1 = loc;
+        Routine routine = Compiler.getRoutineTable().getRoutine(ident.getValue());
+        Compiler.setScope(routine.getScope());
+        routine.setAddress(loc1);
+        int i = 0 - routine.getParamList().size();
+        for (ch.fhnw.cpib.compiler.context.Parameter p : routine.getParamList()){
+            if (p.getMechMode().getValue().toString().toUpperCase().equals("COPY")){
+                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
+                //Compiler.getcodeArray().put(loc1, new Deref());
+                //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+            }else{
+                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
+                //Compiler.getcodeArray().put(loc1, new LoadAddrRel(Compiler.getIdentTable().get(p.getType().getIdent()).intValue()));
+                //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+            }
+            i += 1;
+        }
+        Compiler.getprocIdentTable().put(returnDecl.typedIdent.getIdent().getValue(), new String[] {(0- routine.getParamList().size() - 1) +"","REF"});
+        //returnDecl.code(loc1);
+        //LoadAddrRel of Variables.
+        // Compiler.getVM().Enter(loc1++, routine.getInOutCopyCount() +
+        // getCount(), 0);
+        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+        //loc1 = param.codeIn(loc1, routine.getParamList().size(), 0);
+        loc1 = cmd.code(loc1, true);
+        //loc1 = param.codeOut(loc1, routine.getParamList().size(), 0);
+        // Compiler.getVM().Return(loc1++, 0);
+        Compiler.getcodeArray().put(loc1, new Return(1));
+        //Compiler.setScope(null);
+        return ++loc1;
+        // return (nextDecl!=null?nextDecl.code(loc1):loc1);
+        // return (nextDecl!=null?nextDecl.code(loc1):loc1);
+        // Zuerst AllocBlock f�r return value
+        // Parameter auf Stack legen in korrekter Form (LValue und RValue
+        // check)
+        // call ablegen mit addresse der func im codeArray
+    }
+}
+
+public class DeclarationProcedure extends Declaration {
+    private final Ident ident;
+    private final Parameter param;
+    private final GlobalImport globalImport;
+    private final Declaration decl;
+    private final Declaration nextDecl;
+    private final Cmd cmd;
+    private int countDecls = 0;
+
+    public DeclarationProcedure(Ident ident, Parameter parameter, GlobalImport globalImport, Declaration decl,
+                                Cmd cmd, Declaration nextDecl) {
+        super(nextDecl);
+        this.ident = ident;
+        this.param = parameter;
+        this.globalImport = globalImport;
+        this.decl = decl;
+        this.nextDecl = nextDecl;
+        this.cmd = cmd;
+
+        Declaration tmpDecl = decl;
+        while (tmpDecl != null) {
+            ++countDecls;
+            tmpDecl = tmpDecl.getNextDecl();
+        }
+    }
+
+    public String toString(final String indent) {
+        return indent + "<DeclarationProcedure>\n" + ident.toString(indent + '\t') + param.toString(indent + '\t')
+            + (globalImport != null ? globalImport.toString(indent + '\t') : "")
+            + (decl != null ? decl.toString(indent + '\t') : "") + cmd.toString(indent + '\t')
+            + super.toString(indent + '\t') + indent + "</DeclarationProcedure>\n";
+    }
+
+    public int getCount() {
+        return countDecls;
+    }
+
+    public Ident getIdent() {
+        return ident;
+    }
+
+    public Parameter getParam() {
+        return param;
+    }
+
+    public GlobalImport getGlobImp() {
+        return globalImport;
+    }
+
+    public Declaration getDecl() {
+        return decl;
+    }
+
+    public Cmd getCmd() {
+        return cmd;
+    }
+
+    public void checkDeclaration() throws ContextError {
+        Procedure procedure = new Procedure(ident.getValue());
+        Compiler.setScope(procedure.getScope());
+
+        if (!Compiler.getRoutineTable().addRoutine(procedure)) {
+            throw new ContextError("Routine already declared: " + ident.getValue(), ident.getLine());
+        }
+
+        param.check(procedure);
+        Compiler.setScope(null);
+        if (nextDecl != null)
+            nextDecl.checkDeclaration();
+    }
+
+    @Override
+    public int check(final int locals) throws ContextError {
+        if (locals >= 0) {
+            throw new ContextError("Function declarations are only allowed globally!", ident.getLine());
+        }
+        Routine routine = Compiler.getRoutineTable().getRoutine(ident.getValue());
+        Compiler.setScope(routine.getScope());
+        if (globalImport != null)
+            globalImport.check(routine);
+        int localsCount = param.calculateAddress(routine.getParamList().size(), 0);
+
+        if (decl != null)
+            decl.check(localsCount);
+
+        cmd.check(false);
+        Compiler.setScope(null);
+        return -1;
+    }
+
+    public int code(final int loc) throws CodeTooSmallError {
+        int loc1 = loc;
+        Routine routine = Compiler.getRoutineTable().getRoutine(ident.getValue());
+        Compiler.setScope(routine.getScope());
+        routine.setAddress(loc1);
+        int i = 0 - routine.getParamList().size();
+        for (ch.fhnw.cpib.compiler.context.Parameter p : routine.getParamList()){
+            if (p.getMechMode().getValue().toString().toUpperCase().equals("COPY")){
+                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
+                //Compiler.getcodeArray().put(loc1, new Deref());
+                //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+            }else{
+                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
+                //Compiler.getcodeArray().put(loc1, new LoadAddrRel(Compiler.getIdentTable().get(p.getType().getIdent()).intValue()));
+                //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+            }
+            i += 1;
+        }
+        //LoadAddrRel of Variables.
+        // Compiler.getVM().Enter(loc1++, routine.getInOutCopyCount() +
+        // getCount(), 0);
+        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+        //loc1 = param.codeIn(loc1, routine.getParamList().size(), 0);
+        loc1 = cmd.code(loc1, true);
+        //loc1 = param.codeOut(loc1, routine.getParamList().size(), 0);
+        // Compiler.getVM().Return(loc1++, 0);
+        Compiler.getcodeArray().put(loc1, new Return(1));
+        //Compiler.setScope(null);
+        return ++loc1;
+        // return (nextDecl!=null?nextDecl.code(loc1):loc1);
+    }
+}
+
+public class DeclarationStore extends Declaration {
+    private final ChangeMode changeMode;
+    private final TypedIdent typedIdent;
+    private final Declaration nextDeclaration;
+
+    public DeclarationStore(ChangeMode changeMode, TypedIdent typedIdent, Declaration nextDeclaration) {
+        super(nextDeclaration);
+        this.changeMode = changeMode;
+        this.typedIdent = typedIdent;
+        this.nextDeclaration = nextDeclaration;
+    }
+
+    public String toString(final String indent) {
+        return indent + "<DeclStore>\n" + changeMode.toString(indent + '\t') + typedIdent.toString(indent + '\t')
+            + indent + "</DeclStore>\n" + super.toString(indent + '\t');
+    }
+
+    public ChangeMode getChangeMode() {
+        return changeMode;
+    }
+
+    public TypedIdent getTypedIdent() {
+        return typedIdent;
+    }
+
+    public Store getStore() {
+        return new Store(typedIdent.getIdent().getValue(), typedIdent,
+            changeMode.getValue() == ModeAttributes.CONST);
+    }
+
+    @Override
+    public int check(final int locals) throws ContextError {
+        if (locals < 0) {
+            return -1;
+        } else {
+            Store store = check();
+            store.setAddress(2 + locals + 1);
+            store.setRelative(true);
+            store.setReference(false);
+            return locals + 1;
+        }
+    }
+
+    public void checkDeclaration() throws ContextError {
+        if (this.getTypedIdent() instanceof TypedIdentIdent) {
+            if (Compiler.getGlobalStoreTable().containsIdent(typedIdent.getIdent().getValue())) {
+                throw new ContextError("Store already declared: " + typedIdent.getIdent().getValue(),
+                    typedIdent.getIdent().getLine());
+            }
+
+            Compiler.getGlobalStoreTable().addStore(typedIdent.getIdent().getValue(), getStore());
+
+        } else {
+            Store store = getStore();
+            if (!Compiler.getGlobalStoreTable().addStore(store.getIdent(), store)) {
+                throw new ContextError("Store already declared: " + typedIdent.getIdent().getValue(),
+                    typedIdent.getIdent().getLine());
+            }
+        }
+
+        if (this.getTypedIdent() instanceof TypedIdentArr) {
+            int start = Integer.parseInt(((TypedIdentArr) typedIdent).rangeVal.getStart());
+            int end = Integer.parseInt(((TypedIdentArr) typedIdent).rangeVal.getEnd());
+            Compiler.addArrayStoreTable(typedIdent.getIdent().getValue(), new Range(start, end));
+        }
+
+        if (nextDeclaration != null)
+            nextDeclaration.checkDeclaration();
+    }
+
+    // @Override
+    // public void checkDeclaration() throws ContextError {
+    // if (this.getTypedIdent() instanceof TypedIdentIdent) {
+    // Store store = getStore();
+    // if (!Compiler.getGlobalStoreTable().addStore(store.getIdent(),
+    // store)) {
+    // throw new ContextError("Store already declared: " +
+    // typedIdent.getIdent().getValue());
+    // }
+    // }
+    // if (nextDeclaration != null)
+    // nextDeclaration.checkDeclaration();
+    // }
+
+    public Store check() throws ContextError {
+        Store store = getStore();
+        TypedIdent t = store.getType();
+        Ident ident = typedIdent.getIdent();
+        if (t instanceof TypedIdentIdent) {
+            if (!Compiler.getScope().getStoreTable().addStore(ident.getValue(), store)) {
+                throw new ContextError("Ident already declared: " + ident.getValue(), ident.getLine());
+            }
+        } else {
+            if (!Compiler.getScope().getStoreTable().addStore(ident.getValue(), store)) {
+                throw new ContextError("Ident already declared: " + ident.getValue(), ident.getLine());
+            }
+        }
+
+        return store;
+    }
+
+    public int getArrayAddress(String s) {
+        return ((Range) Compiler.getArrayStoreTable().getStore(s)).getAddress();
+
+    }
+
+    public int getArrayOffset(String s) {
+        return ((Range) Compiler.getArrayStoreTable().getStore(s)).getOffset();
+
+    }
+
+    public int code(final int loc) throws CodeTooSmallError {
+        int loc1 = loc;
+        Declaration d = this;
+        boolean nextDeclNull = false;
+        int arrayStartAddress;
+
+        while (!nextDeclNull) {
+            if (d.nextDecl == null) {
+                nextDeclNull = true;
+            }
+            if (((DeclarationStore) d).typedIdent instanceof TypedIdentArr) {
+                Range range = (Range) Compiler.getArrayStoreTable().getStore(((DeclarationStore) d).typedIdent.getIdent().getValue());
+                Compiler.getcodeArray().put(loc1, new AllocBlock(range.getSize()));
+                ((Range) Compiler.getArrayStoreTable().getStore(((DeclarationStore) d).typedIdent.getIdent().getValue())).setAddress(Compiler.getstackAddressHelper());
+
+                for(int i = 0; i<range.getSize();i++){
+                    Compiler.getcodeArray().put(++loc1, new LoadAddrRel(Compiler.getstackAddressHelper()+i));
+                    Compiler.getcodeArray().put(++loc1, new LoadImInt(0));
+                    Compiler.getcodeArray().put(++loc1, new IInstructions.Store());
+                }
+                Compiler.setstackAddressHelper(range.getSize());
+                loc1++;
+
+            } else {
+                Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                Compiler.addIdentTable(((DeclarationStore) d).typedIdent.getIdent().getValue(), Compiler.getstackAddressHelper());
+                Compiler.setstackAddressHelper(1);
+                loc1++;
+            }
+
+            d = d.getNextDecl();
+        }
+
+        return loc1;
+
+    }
+}
+
+public class Parameter {
+    private final MechMode mechMode;
+    private final DeclarationStore declarationStorage;
+    private final Parameter nextParam;
+    private Store store;
+
+    public Parameter(MechMode mechMode, DeclarationStore declarationStorage, Parameter nextParam) {
+        this.mechMode = mechMode;
+        this.declarationStorage = declarationStorage;
+        this.nextParam = nextParam;
+    }
+
+    public String toString(String indent) {
+        return indent + "<Parameter>\n" + mechMode.toString(indent + '\t')
+            + declarationStorage.changeMode.toString(indent + '\t')
+            + declarationStorage.typedIdent.toString(indent + '\t')
+            + (nextParam != null ? nextParam.toString(indent + '\t') : "") + indent + "</Parameter>\n";
+    }
+
+    public MechMode getMechMode() {
+        return mechMode;
+    }
+
+    public DeclarationStore getDeclarationStore() {
+        return declarationStorage;
+    }
+
+    public ChangeMode getChangeMode() {
+        return declarationStorage.getChangeMode();
+    }
+
+    public Parameter getNextParam() {
+        return nextParam;
+    }
+
+    public TypedIdent getTypedIdent() {
+        return declarationStorage.getTypedIdent();
+    }
+
+    public int getLine() {
+        return declarationStorage.getTypedIdent().getIdent().getLine();
+    }
+
+    public void check(final Routine routine) throws ContextError {
+        store = declarationStorage.check();
+
+        Mode changeMode = new Mode(Terminals.CHANGEMODE, ModeAttributes.CONST);
+
+        if (!store.isConst()) {
+            changeMode = new Mode(Terminals.CHANGEMODE, ModeAttributes.VAR);
+        }
+
+        routine.addParam(new ch.fhnw.cpib.compiler.context.Parameter(getMechMode(), changeMode, store.getType()));
+        if (nextParam != null)
+            nextParam.check(routine);
+    }
+
+    public void checkInit() throws ContextError {
+        if (nextParam != null)
+            nextParam.checkInit();
+    }
+
+    public int calculateAddress(final int count, final int locals) {
+        int locals1 = locals;
+        if (mechMode.getValue() == ModeAttributes.REF) {
+            store.setAddress(-count);
+            store.setRelative(true);
+            if (mechMode.getValue() == ModeAttributes.REF) {
+                store.setReference(true);
+            } else {
+                store.setReference(false);
+            }
+        } else {
+            store.setAddress(2 + ++locals1);
+            store.setRelative(true);
+            store.setReference(false);
+        }
+
+        return (nextParam != null ? nextParam.calculateAddress(count - 1, locals1) : locals1);
+    }
+
+    // public int codeIn(final int loc, final int count, final int locals) {
+    // int locals1 = locals;
+    // int loc1 = loc;
+    // if (mechMode.getValue() == ModeAttributes.COPY) {
+    // Compiler.getVM().CopyIn(loc1++, -count, 3 + locals1);
+    // locals1++;
+    // }
+    // return (nextParam != null ? nextParam.codeIn(loc1, count - 1,
+    // locals1) : loc);
+    // }
+
+    // public int codeOut(final int loc, final int count, final int locals)
+    // {
+    // int locals1 = locals;
+    // int loc1 = loc;
+    // if (mechMode.getValue() == ModeAttributes.COPY) {
+    // Compiler.getVM().CopyOut(loc1++, 2 + ++locals1, -count);
+    // }
+    // return (nextParam != null ? nextParam.codeOut(loc1, count - 1,
+    // locals1) : loc);
+    // }
+}
+
+public class ParameterList {
+    private final Parameter parameter;
+    private final ParameterList parameterList;
+
+    public ParameterList(Parameter parameter, ParameterList parameterList) {
+        this.parameter = parameter;
+        this.parameterList = parameterList;
+    }
+
+    public String toString(String indent) {
+        return indent + "<ParameterList>\n" + parameter.toString(indent + '\t')
+            + (parameterList != null ? parameterList.toString(indent + '\t') : "") + indent
+            + "</ParameterList>\n";
+    }
+
+    public Parameter getParameter() {
+        return parameter;
+    }
+
+    public ParameterList getParameterList() {
+        return parameterList;
+    }
+}
