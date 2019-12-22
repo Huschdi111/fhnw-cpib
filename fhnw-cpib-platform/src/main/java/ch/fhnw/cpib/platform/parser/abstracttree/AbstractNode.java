@@ -14,7 +14,7 @@ public abstract class AbstractNode extends Node {
         throw new RuntimeException("Code generation not implemented yet!");
     }
 
-    public void generateCode(TypeSpec.Builder typespecbuilder) {
+    public int generateCode(int loc) {
         throw new RuntimeException("Code generation not implemented yet!");
     }
 }

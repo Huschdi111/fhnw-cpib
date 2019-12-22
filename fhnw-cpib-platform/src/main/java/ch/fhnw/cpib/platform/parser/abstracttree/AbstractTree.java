@@ -58,15 +58,12 @@ public class AbstractTree {
             int loc1 = loc;
             int loc2 = loc;
 
-            if (declaration != null)
-                if(declaration instanceof DeclarationProcedure || declaration instanceof DeclarationFunction){
-                    loc1 = declaration.nextDecl.code(loc1);
-                    loc2 = declaration.code(loc1+1);
-                    Compiler.getcodeArray().put(loc1, new UncondJump(loc2));
-                }else{
-                    loc2 = declaration.code(loc1);
-                }
-            loc2 = cmd.code(loc2, false);
+            if (declaration != null) {
+                loc1 = declaration.nextDecl.code(loc1);
+                loc2 = declaration.code(loc1 + 1);
+                Compiler.getcodeArray().put(loc1, new UncondJump(loc2));
+                loc2 = cmd.code(loc2, false);
+            }
             for (Routine routine : Compiler.getRoutineTable().getTable().values()) {
                 routine.codeCalls();
             }
