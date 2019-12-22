@@ -1,6 +1,7 @@
 package ch.fhnw.cpib.platform.parser.abstracttree;
 
 import ch.fhnw.cpib.platform.checker.*;
+import ch.fhnw.cpib.platform.javavm.*;
 import ch.fhnw.cpib.platform.generator.GeneratorException;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
@@ -61,14 +62,17 @@ public class AbstractTree {
             if (declaration != null) {
                 loc1 = declaration.nextDecl.code(loc1);
                 loc2 = declaration.code(loc1 + 1);
-                Compiler.getcodeArray().put(loc1, new UncondJump(loc2));
+                CompilerContext.getcodeArray().put(loc1, new UncondJump(loc2));
                 loc2 = cmd.code(loc2, false);
             }
             for (Routine routine : Compiler.getRoutineTable().getTable().values()) {
                 routine.codeCalls();
             }
             Compiler.getcodeArray().put(loc2, new Stop());
+            return -1;
         }
+
+
 
         public String getProgramName() {
             return identifier.getName();
