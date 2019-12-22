@@ -59,13 +59,13 @@ public class Compiler {
             System.out.println("Done");
             System.out.println();
 
-            /*// Generate the Java code
+            // Generate the Java code
             System.out.println("===== Generate Java code =====");
             String javacode = generator.generateJavaCode(abstractprogram);
             System.out.println(javacode);
             System.out.println();
 
-            // Generate the Java JAR file
+            /*// Generate the Java JAR file
             System.out.println("===== Generate Java JAR file =====");
             File jarfile = generator.generateJarFile(javacode, abstractprogram);
             System.out.println("Done: " + jarfile.getAbsolutePath());
@@ -89,10 +89,10 @@ public class Compiler {
         } catch (CheckerException exception) {
             System.out.println("During the checking process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        } /*catch (GeneratorException exception) {
+        } catch (GeneratorException exception) {
             System.out.println("During the generation process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        }*/
+        }
     }
 
     public static void main(String[] args) {

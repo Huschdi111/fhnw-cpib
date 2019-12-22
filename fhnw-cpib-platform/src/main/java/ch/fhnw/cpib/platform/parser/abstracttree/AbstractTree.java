@@ -1,6 +1,7 @@
 package ch.fhnw.cpib.platform.parser.abstracttree;
 
 import ch.fhnw.cpib.platform.checker.*;
+import ch.fhnw.cpib.platform.generator.GeneratorException;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 import com.squareup.javapoet.FieldSpec;
@@ -53,33 +54,23 @@ public class AbstractTree {
             }
         }
 
-        public JavaFile generateCode() {
-            TypeSpec.Builder typescpecbuilder = TypeSpec.classBuilder(getProgramName());
-            typescpecbuilder.addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+        public int generateCode(int loc) throws GeneratorException {
+            int loc1 = loc;
+            int loc2 = loc;
 
-            FieldSpec.Builder fieldspecbuilder = FieldSpec.builder(Scanner.class, "scanner");
-            fieldspecbuilder.addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-            fieldspecbuilder.initializer("new Scanner(System.in)");
-
-            MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder("main");
-            methodspecbuilder.addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-            methodspecbuilder.returns(void.class);
-            methodspecbuilder.addParameter(String[].class, "args");
-
-            if (progparam != null) {
-                progparam.generateCode(methodspecbuilder);
+            if (declaration != null)
+                if(declaration instanceof DeclarationProcedure || declaration instanceof DeclarationFunction){
+                    loc1 = declaration.nextDecl.code(loc1);
+                    loc2 = declaration.code(loc1+1);
+                    Compiler.getcodeArray().put(loc1, new UncondJump(loc2));
+                }else{
+                    loc2 = declaration.code(loc1);
+                }
+            loc2 = cmd.code(loc2, false);
+            for (Routine routine : Compiler.getRoutineTable().getTable().values()) {
+                routine.codeCalls();
             }
-
-            if (declaration != null) {
-                declaration.generateCode(typescpecbuilder);
-            }
-
-            cmd.generateCode(methodspecbuilder);
-
-            typescpecbuilder.addField(fieldspecbuilder.build());
-            typescpecbuilder.addMethod(methodspecbuilder.build());
-
-            return JavaFile.builder("fhnw", typescpecbuilder.build()).build();
+            Compiler.getcodeArray().put(loc2, new Stop());
         }
 
         public String getProgramName() {
