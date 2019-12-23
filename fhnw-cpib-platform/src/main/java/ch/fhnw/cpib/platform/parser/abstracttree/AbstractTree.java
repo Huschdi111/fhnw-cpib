@@ -1,16 +1,10 @@
 package ch.fhnw.cpib.platform.parser.abstracttree;
 
 import ch.fhnw.cpib.platform.checker.*;
-import ch.fhnw.cpib.platform.javavm.*;
+import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.generator.GeneratorException;
-import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
-
-import javax.lang.model.element.Modifier;
+import ch.fhnw.cpib.platform.generator.CompilerContext;
 import java.util.*;
 
 public class AbstractTree {
@@ -56,24 +50,25 @@ public class AbstractTree {
         }
 
         public int generateCode(int loc) throws GeneratorException {
-            /*int loc1 = loc;
-            int loc2 = loc;
+            try {
+                int loc1 = loc;
+                int loc2 = loc;
 
-            if (declaration != null) {
-                loc1 = declaration.nextDecl.code(loc1);
-                loc2 = declaration.code(loc1 + 1);
-                CompilerContext.getcodeArray().put(loc1, new UncondJump(loc2));
-                loc2 = cmd.code(loc2, false);
+                if (declaration != null) {
+                    loc1 = declaration.nextdeclaration.generateCode(loc1);
+                    loc2 = declaration.generateCode(loc1 + 1);
+                    CompilerContext.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
+                    loc2 = cmd.generateCode(loc2);
+                }
+                for (Routine routine : CompilerContext.getRoutineTable().getTable().values()) {
+                    routine.codeCalls();
+                }
+                CompilerContext.getcodeArray().put(loc2, new IInstructions.Stop());
+                return -1;
+            }catch(Exception e){
+                throw new GeneratorException("Code Generation for Program failed", e);
             }
-            for (Routine routine : Compiler.getRoutineTable().getTable().values()) {
-                routine.codeCalls();
-            }
-            Compiler.getcodeArray().put(loc2, new Stop());
-            return -1;*/
-            return -1;
         }
-
-
 
         public String getProgramName() {
             return identifier.getName();
@@ -246,7 +241,7 @@ public class AbstractTree {
 
         public abstract Tokens.TypeToken.Type checkCode(Checker checker) throws CheckerException;
 
-        public abstract int generateCode(int loc);
+        public abstract int generateCode(int loc) throws GeneratorException;
     }
 
     public static class StoDecl extends Declaration {
@@ -320,33 +315,24 @@ public class AbstractTree {
         }*/
 
         @Override
-        public int generateCode(int loc) {
-            /*TypedIdentType typedidenttype = (TypedIdentType) typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    FieldSpec.Builder fieldspecbuilder1 = FieldSpec.builder(boolean.class, typedidenttype.getParameterName());
-                    fieldspecbuilder1.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder1.initializer("false");
-                    typespecbuilder.addField(fieldspecbuilder1.build());
-                    break;
-                case INT:
-                    FieldSpec.Builder fieldspecbuilder2 = FieldSpec.builder(int.class, typedidenttype.getParameterName());
-                    fieldspecbuilder2.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder2.initializer("0");
-                    typespecbuilder.addField(fieldspecbuilder2.build());
-                    break;
-                case INT64:
-                default:
-                    FieldSpec.Builder fieldspecbuilder3 = FieldSpec.builder(long.class, typedidenttype.getParameterName());
-                    fieldspecbuilder3.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder3.initializer("0L");
-                    typespecbuilder.addField(fieldspecbuilder3.build());
-                    break;
+        public int generateCode(int loc) throws GeneratorException{
+            try {
+                int loc1 = loc;
+                boolean nextDeclNull = false;
+                Declaration d = this;
+                while (!nextDeclNull) {
+                    if (d.nextdeclaration == null) {
+                        nextDeclNull = true;
+                    }
+                    CompilerContext.getcodeArray().put(loc1, new IInstructions.AllocBlock(1));
+                    CompilerContext.addIdentTable(((StoDecl) d).typedident.getIdentifier().getName(), CompilerContext.getstackAddressHelper());
+                    CompilerContext.setstackAddressHelper(1);
+                    loc1++;
+                }
+                return loc1;
+            }catch(Exception e) {
+                throw new GeneratorException("Failed to generate Code for storage decleration: " + typedident.getIdentifier().getName(), e);
             }
-            if (getNextDeclaration() != null) {
-                getNextDeclaration().generateCode(typespecbuilder);
-            }*/
-            return -1;
         }
     }
 
