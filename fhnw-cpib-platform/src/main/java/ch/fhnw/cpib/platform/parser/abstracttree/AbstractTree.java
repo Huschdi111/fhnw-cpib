@@ -1,12 +1,18 @@
 package ch.fhnw.cpib.platform.parser.abstracttree;
 
 import ch.fhnw.cpib.platform.checker.*;
+import ch.fhnw.cpib.platform.generator.CompilerContext;
+import ch.fhnw.cpib.platform.javavm.ICodeArray;
+import ch.fhnw.cpib.platform.javavm.IInstructions;
+import ch.fhnw.cpib.platform.javavm.VirtualMachine;
+import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException;
 
 import javax.lang.model.element.Modifier;
 import java.util.*;
@@ -53,33 +59,24 @@ public class AbstractTree {
             }
         }
 
-        public JavaFile generateCode() {
-            TypeSpec.Builder typescpecbuilder = TypeSpec.classBuilder(getProgramName());
-            typescpecbuilder.addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+            int loc1 = loc;
+            int loc2 = loc;
 
-            FieldSpec.Builder fieldspecbuilder = FieldSpec.builder(Scanner.class, "scanner");
-            fieldspecbuilder.addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-            fieldspecbuilder.initializer("new Scanner(System.in)");
-
-            MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder("main");
-            methodspecbuilder.addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-            methodspecbuilder.returns(void.class);
-            methodspecbuilder.addParameter(String[].class, "args");
-
-            if (progparam != null) {
-                progparam.generateCode(methodspecbuilder);
+            if (declaration != null)
+                if(declaration instanceof ProcDecl || declaration instanceof FunDecl){
+                    loc1 = declaration.nextdeclaration.generateCode(loc1);
+                    loc2 = declaration.generateCode(loc1+1);
+                    CompilerContext.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
+                }else{
+                    loc2 = declaration.generateCode(loc1);
+                }
+            loc2 = cmd.generateCode(loc2, false);
+            for (Routine routine : CompilerContext.getRoutineTable().getTable().values()) {
+                routine.code();
             }
-
-            if (declaration != null) {
-                declaration.generateCode(typescpecbuilder);
-            }
-
-            cmd.generateCode(methodspecbuilder);
-
-            typescpecbuilder.addField(fieldspecbuilder.build());
-            typescpecbuilder.addMethod(methodspecbuilder.build());
-
-            return JavaFile.builder("fhnw", typescpecbuilder.build()).build();
+            CompilerContext.getcodeArray().put(loc2, new IInstructions.Stop());
+            return loc2;
         }
 
         public String getProgramName() {
@@ -419,43 +416,46 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(TypeSpec.Builder typescpecbuilder) {
-            MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder(identifier.getName());
-            methodspecbuilder.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-
-            if (param != null) {
-                param.generateCode(methodspecbuilder);
+            public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+                int loc1 = loc;
+                Routine routine = CompilerContext.getRoutineTable().getRoutine(identation.getValue());
+                CompilerContext.setScope(routine.getScope());
+                routine.setAddress(loc1);
+                int i = 0 - routine.getParamList().size();
+                for (ch.fhnw.cpib.compiler.context.Parameter p : routine.getParamList()){
+                    if (p.getMechMode().getValue().toString().toUpperCase().equals("COPY")){
+                        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                        Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
+                        //Compiler.getcodeArray().put(loc1, new Deref());
+                        //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+                    }else{
+                        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                        Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
+                        //Compiler.getcodeArray().put(loc1, new LoadAddrRel(Compiler.getIdentTable().get(p.getType().getIdent()).intValue()));
+                        //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+                    }
+                    i += 1;
+                }
+                Compiler.getprocIdentTable().put(returnDecl.typedIdent.getIdent().getValue(), new String[] {(0- routine.getParamList().size() - 1) +"","REF"});
+                //returnDecl.code(loc1);
+                //LoadAddrRel of Variables.
+                // Compiler.getVM().Enter(loc1++, routine.getInOutCopyCount() +
+                // getCount(), 0);
+                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
+                //loc1 = param.codeIn(loc1, routine.getParamList().size(), 0);
+                loc1 = cmd.generateCode(loc1, true);
+                //loc1 = param.codeOut(loc1, routine.getParamList().size(), 0);
+                // Compiler.getVM().Return(loc1++, 0);
+                CompilerContext.getcodeArray().put(loc1, new IInstructions.Return(1));
+                //Compiler.setScope(null);
+                return ++loc1;
+                // return (nextDecl!=null?nextDecl.code(loc1):loc1);
+                // return (nextDecl!=null?nextDecl.code(loc1):loc1);
+                // Zuerst AllocBlock für return value
+                // Parameter auf Stack legen in korrekter Form (LValue und RValue
+                // check)
+                // call ablegen mit addresse der func im codeArray
             }
-
-            storedeclaration.generateCode(methodspecbuilder);
-            StoDecl stodecl = (StoDecl) storedeclaration;
-            TypedIdentType typedidenttype = (TypedIdentType) stodecl.typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    methodspecbuilder.returns(boolean.class);
-                    break;
-                case INT:
-                    methodspecbuilder.returns(int.class);
-                    break;
-                case INT64:
-                default:
-                    methodspecbuilder.returns(long.class);
-                    break;
-            }
-
-            if (declaration != null) {
-                declaration.generateCode(methodspecbuilder);
-            }
-
-            cmd.generateCode(methodspecbuilder);
-
-            methodspecbuilder.addStatement("return " + typedidenttype.getParameterName());
-
-            if (getNextDeclaration() != null) {
-                getNextDeclaration().generateCode(typescpecbuilder);
-            }
-
-            typescpecbuilder.addMethod(methodspecbuilder.build());
         }
 
         @Override
@@ -586,11 +586,8 @@ public class AbstractTree {
             }
         }
 
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addStatement("");
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
-            }
+        public int generateCode(int loc) {
+            return (getNextCmd() != null ? getNextCmd().generateCode(loc, routine) : loc);
         }
     }
 
@@ -657,22 +654,50 @@ public class AbstractTree {
             }
         }
 
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            expression1.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(" = ");
-            expression2.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(";" + System.lineSeparator());
+        public int generateCode(int loc) {
+            int loc1;
 
-            if (expressionlist1 != null && expressionlist2 != null) {
-                expressionlist1.generateCode(methodscpecbuilder);
-                methodscpecbuilder.addCode(" = ");
-                expressionlist2.generateCode(methodscpecbuilder);
-                methodscpecbuilder.addCode(";" + System.lineSeparator());
+            if (expression2 instanceof DyadicExpr && ((DyadicExpr) expression2).getOperator().getValue() == OperatorAttribute.DOT) {
+                expression2 = (StoreExpr) ((DyadicExpr) expression2).getExpr1();
             }
 
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
+            if (expression1 instanceof DyadicExpr
+                && ((DyadicExpr) expression1).getOperator().getValue() == OperatorAttribute.DOT) {
+                expression1 = (StoreExpr) ((DyadicExpr) expression1).getExpr1();
             }
+
+
+            if (expression1 instanceof ExprAr) {
+                Compiler.getcodeArray().put(loc,
+                    new LoadAddrRel(getArrayAdress(((ExprArray) expression1).ident.getValue())));
+                loc1 = loc + 1;
+                if(((ExprArray) expression1).expression instanceof ExprStore){
+                    loc1 = ((ExprStore)((ExprArray) expression1).expression).codeRef(loc1, true, true, routine);
+                }else{
+                    loc1 = ((ExprArray) expression1).expression.code(loc1, routine);
+                }
+
+
+                // Compiler.getcodeArray().put(loc+1,new LoadImInt(new
+                // Integer(((ExprArray)targetExpression).expression.getValue()).intValue()));
+                CompilerException.getcodeArray().put(loc1,
+                    new IInstructions.LoadImInt(getArrayOffset(((ExprArray) expression1).ident.getValue())));
+                CompilerContext.getcodeArray().put(++loc1, new IInstructions.SubInt());
+                CompilerException.getcodeArray().put(++loc1, new IInstructions.AddInt());
+                loc1++;
+            } else {
+                loc1 = expression1.generateCode(loc, routine);
+            }
+
+            if (!(expression1 instanceof ExprStore)) {
+                loc1 = expression1.generateCode(loc1, routine);
+                CompilerContext.getcodeArray().put(loc1++, new IInstructions.Store());
+            } else {
+                loc1 = ((ExprStore) expression1).codeRef(loc1, true, true, routine);
+                // Compiler.getVM().Store(loc1++);
+                CompilerContext.getcodeArray().put(loc1++, new IInstructions.Store());
+            }
+            return (getNextCmd() != null ? getNextCmd().code(loc1, routine) : loc1);
         }
     }
 
@@ -715,7 +740,7 @@ public class AbstractTree {
             }
         }
 
-        @Override
+        @Override//TODO implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             methodscpecbuilder.addCode("switch(");
             expression.generateCode(methodscpecbuilder);
@@ -797,7 +822,7 @@ public class AbstractTree {
             }
         }
 
-        @Override
+        @Override//TODO implement
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             methodspecbuilder.beginControlFlow("case " + literal.getValue() + " :");
             cmd.generateCode(methodspecbuilder);
@@ -857,28 +882,15 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode("if(");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(") {" + System.lineSeparator());
-
-            cmd.generateCode(methodscpecbuilder);
-
-            methodscpecbuilder.addCode("}" + System.lineSeparator());
-
-            if (repcondcmd != null) {
-                repcondcmd.generateCode(methodscpecbuilder);
-            }
-
-            if (othercmd != null) {
-                methodscpecbuilder.beginControlFlow("else");
-                othercmd.generateCode(methodscpecbuilder);
-                methodscpecbuilder.endControlFlow();
-
-            }
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
-            }
+        public int generateCode(final int loc, boolean routine) throws CodeTooSmallError {
+            int loc1 = expression.generateCode(loc, routine);
+            int loc2 = ifCmd.code(loc1 + 1, routine);
+            // Compiler.getVM().CondJump(loc1, loc2 + 1);
+            CompilerContext.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
+            int loc3 = elseCmd.code(loc2 + 1, routine);
+            // Compiler.getVM().UncondJump(loc2, loc3);
+            CompilerContext.getcodeArray().put(loc2, new IInstructions.UncondJump(loc3));
+            return (nextCmd != null ? nextCmd.code(loc3, routine) : loc3);
         }
     }
 
@@ -904,7 +916,7 @@ public class AbstractTree {
             repArrowCmd.checkCode(checker);
         }
 
-        @Override
+        @Override//TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
 
         }
@@ -945,7 +957,7 @@ public class AbstractTree {
             }
         }
 
-        @Override
+        @Override//TODO implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
 
         }
@@ -991,7 +1003,7 @@ public class AbstractTree {
             }
         }
 
-        @Override
+        @Override//TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             methodscpecbuilder.addCode("else if(");
             expression.generateCode(methodscpecbuilder);
@@ -1041,14 +1053,14 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode("while(");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(") {" + System.lineSeparator());
-
-            cmd.generateCode(methodscpecbuilder);
-
-            methodscpecbuilder.addCode("}" + System.lineSeparator());
+        public int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1 = expression.generateCode();code(loc, routine);
+            int loc2 = cmd.generateCode(loc1 + 1, routine);
+            // Compiler.getVM().CondJump(loc1, loc2 + 1);
+            // Compiler.getVM().UncondJump(loc2, loc);
+            CompilerContext.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
+            CompilerContext.getcodeArray().put(loc2, new IInstructions.UncondJump(loc));
+            return (nextcmd != null ? nextcmd.generateCode(loc2 + 1, routine); : (loc2 + 1));
         }
     }
 
@@ -1084,11 +1096,11 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            routinecall.generateCode(methodscpecbuilder);
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
-            }
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1 = loc;
+            loc1 = routinecall.getExprList().code(loc1, routine);
+            CompilerContext.getRoutineTable().getRoutine(routinecall.getIdent().getValue()).addCall(loc1++);
+            return (nextcmd != null ? nextcmd.generateCode((loc1, routine) : loc1);
         }
     }
 
@@ -1117,14 +1129,43 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            // FIXME: Fix known errata
-            methodscpecbuilder.addStatement("System.out.println(\"Input a value:\")");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(" = scanner.nextInt();" + System.lineSeparator());
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1;
+            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperator().getValue() == OperatorAttribute.DOT) {
+                ExprStore expr1 = (ExprStore) ((DyadicExpr) expression).getExpr1();
+                expression = expr1;
+                loc1 = ((ExprStore) expression).codeRef(loc, true, false, routine); // TODO
+            } else if (expression instanceof ExprArray) {
+                loc1 = ((ExprArray) expression).codeRef(loc, routine);
+            } else {
+                loc1 = ((ExprStore) expression).codeRef(loc, true, false, routine); // TODO
             }
+
+            if (type.getValue() == TypeAttribute.BOOL) {
+                // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
+                // expr).getIdent().getValue());
+                if (expression instanceof ExprStore) {
+                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprStore) expression).getIdent().getValue()));
+                } else if (expression instanceof ExprArray) {
+                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprArray) expression).getIdent().getValue()));
+                } else {
+                    throw new IllegalArgumentException("Wrong Expression while code generation");
+                }
+
+            } else {
+                // Compiler.getVM().IntOutput(loc1++, ((ExprStore)
+                // expr).getIdent().getValue());
+                if (expression instanceof ExprStore) {
+                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((ExprStore) expression).getIdent().getValue()));
+                } else if (expression instanceof ExprArray) {
+                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((ExprArray) expression).getIdent().getValue()));
+                } else {
+                    throw new IllegalArgumentException("Wrong Expression while code generation");
+                }
+                // Compiler.getcodeArray().put(loc1++, new
+                // OutputInt(((ExprStore) expr).getIdent().getValue()));
+            }
+            return (nextcmd != null ? nextcmd.code(loc1, routine) : loc1);
         }
     }
 
@@ -1153,15 +1194,48 @@ public class AbstractTree {
         }
 
         @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addStatement("System.out.println(\"Output of value is:\")");
-            methodscpecbuilder.addCode("System.out.println(");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(");" + System.lineSeparator());
-
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1;
+            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperator().getValue() == OperatorAttribute.DOT) {
+                ExprStore expr1 = (ExprStore) ((DyadicExpr) expression).getExpr1();
+                ExprStore expr2 = (ExprStore) ((DyadicExpr) expression).getExpr2();
+                Store store = (Store) CompilerContext.getGlobalStoreTable()
+                    .getStore(expr2.getIdent().getValue() + "." + expr1.getIdent().getValue());
+                expr1.setIdent(store.getType().getIdent());
+                expression = expr1;
+                loc1 = expression.generateCode(loc, routine);
+            } else if (expression instanceof ExprArray) {
+                loc1 = ((ExprArray) expression).code(loc, routine);
+            } else {
+                loc1 = ((ExprStore) expression).code(loc, routine);
+                CompilerContext.getcodeArray().put(loc1++, new IInstructions.Deref());
             }
+
+            if (type.getValue() == TypeAttribute.BOOL) {
+                // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
+                // expr).getIdent().getValue());
+                if (expression instanceof ExprStore) {
+                    CompilerContext.getcodeArray().put(loc1++, new IInstructions.OutputBool(((ExprStore) expression).getIdent().getValue()));
+                } else if (expression instanceof ExprArray) {
+                    CompilerContext.getcodeArray().put(loc1++, new IInstructions.OutputBool(((ExprArray) expression).getIdent().getValue()));
+                } else {
+                    throw new IllegalArgumentException("Wrong Expression while code generation");
+                }
+
+            } else {
+                // Compiler.getVM().IntOutput(loc1++, ((ExprStore)
+                // expr).getIdent().getValue());
+                if (expression instanceof ExprStore) {
+                    CompilerContext.getcodeArray().put(loc1++, new IInstructions.OutputInt(((ExprStore) expression).getIdent().getValue()));
+                } else if (expression instanceof ExprArray) {
+                    CompilerContext.getcodeArray().put(loc1++, new IInstructions.OutputInt(((ExprArray) expression).getIdent().getValue()));
+                } else {
+                    throw new IllegalArgumentException("Wrong Expression while code generation");
+                }
+                // Compiler.getcodeArray().put(loc1++, new
+                // OutputInt(((ExprStore) expr).getIdent().getValue()));
+            }
+            return (nextcmd != null ? nextcmd.code(loc1, routine) : loc1);
         }
     }
 
@@ -1196,7 +1270,7 @@ public class AbstractTree {
                 + getHead("</TypedIdentType>");
         }
 
-        @Override
+        @Override//TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             switch (type) {
                 case BOOL:
@@ -1273,9 +1347,11 @@ public class AbstractTree {
             }
             throw new CheckerException("Invalid literal type");
         }
-
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode(literal.getValue());
+        @Override
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            // Compiler.getVM().IntLoad(loc, literal.getLiteral());
+            CompilerContext.getcodeArray().put(loc, new IInstructions.LoadImInt(literal.getLiteral()));
+            return loc + 1;
         }
     }
 
@@ -1340,9 +1416,36 @@ public class AbstractTree {
             return new ExpressionInfo(store.getIdentifier(), store.getType());
         }
 
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode(identifier.getName());
-        }
+
+        @Override
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            Store store = (Store) CompilerContext.getScope().getStoreTable().getStore(getIdendation().getValue());
+            int loc1 = loc;
+            if (routine) {
+                if (CompilerContext.getprocIdentTable().containsKey(ident.getValue())) {
+                    //Compiler.getcodeArray().put(loc, new LoadAddrRel(Integer.parseInt(Compiler.getprocIdentTable().get(ident.getValue())[0])));
+                    if(store==null){
+                        CompilerContext.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(CompilerContext.getprocIdentTable().get(ident.getValue())[0])));
+                        return loc1;
+                    }else{
+                        loc1 = store.codeRef(loc, true, false, routine);
+                        return loc1;
+                    }
+
+                } else {
+                    CompilerContext.addIdentTable(ident.getValue(), loc);
+                    return ((store != null) ? store.codeLoad(loc, routine) : loc);
+                }
+            } else {
+                if (CompilerContext.getIdentTable().containsKey(ident.getValue())) {
+                    CompilerContext.getcodeArray().put(loc,
+                        new IInstructions.LoadAddrRel(CompilerContext.getIdentTable().get(ident.getValue()).intValue()));
+                    return loc + 1;
+                } else {
+                    CompilerContext.addIdentTable(ident.getValue(), loc);
+                    return ((store != null) ? store.codeLoad(loc, routine) : loc);
+                }
+            }
     }
 
     public static class FunCallExpr extends Expression {
@@ -1364,7 +1467,7 @@ public class AbstractTree {
         public ExpressionInfo checkCode(Checker checker) throws CheckerException {
             return routinecall.checkCode(checker);
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             routinecall.generateCode(methodspecbuilder);
         }
@@ -1394,7 +1497,7 @@ public class AbstractTree {
         public ExpressionInfo checkCode(Checker checker) throws CheckerException {
             return expression.checkCode(checker);
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             if (operation.getOperation() == Tokens.OperationToken.Operation.MINUS) {
                 methodscpecbuilder.addCode(" -");
@@ -1505,61 +1608,75 @@ public class AbstractTree {
             return new ExpressionInfo(exprinfo1.getName(), exprinfo1.getType());
         }
 
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            methodspecbuilder.addCode("(");
-            expression1.generateCode(methodspecbuilder);
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+
+            int loc1 = expression1.generateCode(loc);
+            int loc2;
             switch (operation.getOperation()) {
                 case PLUS:
-                    methodspecbuilder.addCode(" + ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.AddInt());
+                    return loc2++;
                 case MINUS:
-                    methodspecbuilder.addCode(" - ");
-                    break;
-                case AND:
-                    methodspecbuilder.addCode(" && ");
-                    break;
-                case OR:
-                    methodspecbuilder.addCode(" || ");
-                    break;
-                case CAND:
-                    methodspecbuilder.addCode(" & ");
-                    break;
-                case COR:
-                    methodspecbuilder.addCode(" | ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.SubInt());
+                    return loc2++;
+                case AND://TODO FIX
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.AddInt());
+                    return loc2++;
+                case OR: //TODO FIX
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.AddInt());
+                    return loc2++;
+                case CAND: //TODO FIX
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.AddInt());
+                    return loc2++;
+                case COR: //TODO FIX
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.AddInt());
+                    return loc2++;
                 case TIMES:
-                    methodspecbuilder.addCode(" * ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.MultInt());
+                    return loc2++;
                 case DIVE:
-                    methodspecbuilder.addCode(" / ");
-                    break;
-                case MODE:
-                    methodspecbuilder.addCode(" % ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.DivTruncInt());
+                    return loc2++;
+                case MODE://TODO ????
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.Mode());
+                    return loc2++;
                 case EQ:
-                    methodspecbuilder.addCode(" == ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.EqInt());
+                    return loc2++;
                 case NE:
-                    methodspecbuilder.addCode(" != ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.NeInt());
+                    return loc2++;
                 case LT:
-                    methodspecbuilder.addCode(" < ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.LtInt());
+                    return loc2++;
                 case GT:
-                    methodspecbuilder.addCode(" > ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.GtInt());
+                    return loc2++;
                 case LE:
-                    methodspecbuilder.addCode(" <= ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.LeInt());
+                    return loc2++;
                 case GE:
-                    methodspecbuilder.addCode(" >= ");
-                    break;
+                    loc2 = expression2.generateCode(loc1);
+                    CompilerContext.getcodeArray().put(loc2, new IInstructions.GeInt());
+                    return loc2++;
                 default:
                     throw new RuntimeException("Invalid operation found!");
 
             }
-            expression2.generateCode(methodspecbuilder);
-            methodspecbuilder.addCode(")");
         }
     }
 
@@ -1610,7 +1727,7 @@ public class AbstractTree {
             }
             return new ExpressionInfo(calledroutine.getIdentifier(), calledroutine.getReturnType());
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             methodspecbuilder.addCode(identifier.getName() + "(");
             if (expressionlist != null) {
@@ -1646,7 +1763,7 @@ public class AbstractTree {
                 expressionlist.checkCode(checker, expressioninfos);
             }
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             expression.generateCode(methodscpecbuilder);
             if (expressionlist != null) {
@@ -1681,7 +1798,7 @@ public class AbstractTree {
                 nextglobalinit.checkCode();
             }
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             // FIXME: Implement code generation
             throw new RuntimeException("Code generation not implemented yet!");
@@ -1719,7 +1836,7 @@ public class AbstractTree {
         public void checkCode(Routine routine) {
             routine.addGlobalImport(this);
         }
-
+        //TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             // FIXME: Implement code generation
             throw new RuntimeException("Code generation not implemented yet!");
