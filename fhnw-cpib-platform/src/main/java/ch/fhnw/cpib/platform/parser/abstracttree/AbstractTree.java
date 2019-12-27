@@ -357,13 +357,13 @@ public class AbstractTree {
 
         public final Declaration storedeclaration;
 
-        public final GlobalImport globalimport;
+        public final StoreExpr.GlobalImport globalimport;
 
         public final Declaration declaration;
 
         public final Cmd cmd;
 
-        public FunDecl(Tokens.IdentifierToken identifier, Param param, Declaration storedeclaration, GlobalImport globalimport, Declaration declaration, Cmd cmd, Declaration nextdeclaration, int idendation) {
+        public FunDecl(Tokens.IdentifierToken identifier, Param param, Declaration storedeclaration, StoreExpr.GlobalImport globalimport, Declaration declaration, Cmd cmd, Declaration nextdeclaration, int idendation) {
             super(nextdeclaration, idendation);
             this.identifier = identifier;
             this.param = param;
@@ -415,7 +415,11 @@ public class AbstractTree {
         }
 
         @Override
-            public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
+
+        }
+
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
                 int loc1 = loc;
                 Routine routine = CompilerContext.getRoutineTable().getRoutine(identation.getValue());
                 CompilerContext.setScope(routine.getScope());
@@ -455,12 +459,6 @@ public class AbstractTree {
                 // check)
                 // call ablegen mit addresse der func im codeArray
             }
-        }
-
-        @Override
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            // Just make the compiler happy
-        }
     }
 
     public static class ProcDecl extends Param.Declaration {
@@ -653,7 +651,7 @@ public class AbstractTree {
             }
         }
 
-        public int generateCode(int loc) {
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
             int loc1;
 
             if (expression2 instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression2).getOperator().getValue() == OperatorAttribute.DOT) {
@@ -664,7 +662,6 @@ public class AbstractTree {
                 && ((StoreExpr.DyadicExpr) expression1).getOperator().getValue() == OperatorAttribute.DOT) {
                 expression1 = (StoreExpr) ((StoreExpr.DyadicExpr) expression1).getExpr1();
             }
-
 
             if (expression1 instanceof ExprAr) {
                 CompilerContext.getcodeArray().put(loc,
@@ -696,7 +693,7 @@ public class AbstractTree {
                 // Compiler.getVM().Store(loc1++);
                 CompilerContext.getcodeArray().put(loc1++, new IInstructions.Store());
             }
-            return (getNextCmd() != null ? getNextCmd().generateCode(loc1, routine); : loc1);
+            return (getNextCmd() != null ? getNextCmd().generateCode(loc1, routine) : loc1);
         }
     }
 
@@ -1052,13 +1049,13 @@ public class AbstractTree {
 
         @Override
         public int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            int loc1 = expression.generateCode(code(loc, routine);
+            int loc1 = expression.generateCode(loc, routine);
             int loc2 = cmd.generateCode(loc1 + 1, routine);
             // Compiler.getVM().CondJump(loc1, loc2 + 1);
             // Compiler.getVM().UncondJump(loc2, loc);
             CompilerContext.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
             CompilerContext.getcodeArray().put(loc2, new IInstructions.UncondJump(loc));
-            return (nextcmd != null ? nextcmd.generateCode(loc2 + 1, routine); : (loc2 + 1));
+            return (nextcmd != null ? nextcmd.generateCode(loc2 + 1, routine) : (loc2 + 1);
         }
     }
 
@@ -1097,8 +1094,8 @@ public class AbstractTree {
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = loc;
             loc1 = routinecall.getExprList().code(loc1, routine);
-            CompilerContext.getRoutineTable().getRoutine(routinecall.getIdent().getValue()).addCall(loc1++);
-            return (nextcmd != null ? nextcmd.generateCode((loc1, routine) : loc1);
+            CompilerContext.getRoutineTable().getRoutine(routinecall.getIdendation().getValue()).addCall(loc1++);
+            return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
     }
 
@@ -1163,7 +1160,7 @@ public class AbstractTree {
                 // Compiler.getcodeArray().put(loc1++, new
                 // OutputInt(((ExprStore) expr).getIdent().getValue()));
             }
-            return (nextcmd != null ? nextcmd.generateCode(loc1, routine); : loc1);
+            return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
     }
 
@@ -1233,7 +1230,7 @@ public class AbstractTree {
                 // Compiler.getcodeArray().put(loc1++, new
                 // OutputInt(((ExprStore) expr).getIdent().getValue()));
             }
-            return (nextcmd != null ? nextcmd.generateCode(loc1, routine); : loc1);
+            return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
     }
 
@@ -1311,6 +1308,8 @@ public class AbstractTree {
         }
 
         public abstract ExpressionInfo checkCode(Checker checker) throws CheckerException;
+
+        abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class LiteralExpr extends Expression {
@@ -1469,6 +1468,17 @@ public class AbstractTree {
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             routinecall.generateCode(methodspecbuilder);
         }
+
+
+
+        @Override
+        int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError { // TODO
+            int loc1 = loc;
+            CompilerContext.getcodeArray().put(loc1++, new IInstructions.AllocBlock(1)); //referenz neu spechern?
+            loc1 = routineCall.getExprList().code(loc1, routine);
+            CompilerContext.getRoutineTable().getRoutine(routineCall.getIdent().getValue()).addCall(loc1++);
+            return loc1;
+        }
     }
 
     public static class MonadicExpr extends Expression {
@@ -1505,6 +1515,13 @@ public class AbstractTree {
                 throw new RuntimeException("The generator just hit a known errata in the monadic expression");
             }
         }
+
+        @Override
+        int generateCode(int loc, boolean routine) {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
     }
 
     public static class DyadicExpr extends Expression {
@@ -1676,6 +1693,106 @@ public class AbstractTree {
 
             }
         }
+
+        @Override
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1;
+
+            if (expression1 instanceof ExprStore) {
+                loc1 = ((ExprStore) expression1).codeRef(loc, true, true, routine);
+            } else if (expression1 instanceof ExprFunCall) {
+                loc1 = ((ExprFunCall) expression1).code(loc, routine);
+            } else {
+
+                loc1 = expression1.code(loc, routine);
+            }
+
+            if (operator.getValue() != OperatorAttribute.CAND && operator.getValue() != OperatorAttribute.COR) {
+
+                if (expression2 instanceof ExprStore) {
+                    loc1 = ((ExprStore) expression2).codeRef(loc1, true, true, routine);
+                } else if (expression2 instanceof ExprFunCall) {
+                    loc1 = ((ExprFunCall) expression2).code(loc1, routine);
+                } else {
+
+                    loc1 = expression2.code(loc1, routine);
+                }
+
+                switch (operatortor.getValue()) {
+                    case DOT:
+                        break;
+                    case PLUS:
+                        // Compiler.getVM().IntAdd(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.AddInt());
+                        break;
+                    case MINUS:
+                        // Compiler.getVM().IntSub(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.SubInt());
+                        break;
+                    case TIMES:
+                        // Compiler.getVM().IntMult(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.MultInt());
+                        break;
+                    case DIV:
+                        // Compiler.getVM().IntDiv(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.DivTruncInt());
+                        break;
+                    case MOD:
+                        // Compiler.getVM().IntMod(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.ModTruncInt());
+                        break;
+                    case EQ:
+                        // Compiler.getVM().IntEQ(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.EqInt());
+                        break;
+                    case NE:
+                        // Compiler.getVM().IntNE(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.NeInt());
+                        break;
+                    case GT:
+                        // Compiler.getVM().IntGT(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.GtInt());
+                        break;
+                    case LT:
+                        // Compiler.getVM().IntLT(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.LtInt());
+                        break;
+                    case GE:
+                        // Compiler.getVM().IntGE(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.GeInt());
+                        break;
+                    case LE:
+                        // Compiler.getVM().IntLE(loc1);
+                        CompilerContext.getcodeArray().put(loc1, new IInstructions.LeInt());
+                        break;
+                    default:
+                        throw new RuntimeException();
+                }
+
+                return loc1 + 1;
+            } else if (operator.getValue() == OperatorAttribute.CAND) {
+                int loc2 = expression2.generateCode(loc1 + 1, routine);
+                // Compiler.getVM().UncondJump(loc2++, loc2 + 1);
+                // Compiler.getVM().CondJump(loc1, loc2);
+                // Compiler.getVM().IntLoad(loc2++, 0);
+                CompilerContext.getcodeArray().put(loc2++, new IInstructions.UncondJump(loc2 + 1));
+                CompilerContext.getcodeArray().put(loc1, new IInstructions.CondJump(loc2));
+                CompilerContext.getcodeArray().put(loc2++, new IInstructions.LoadImInt(0));
+                return loc2;
+            } else {
+                int loc2 = expression2.generateCode(loc1 + 2, routine);
+                // Compiler.getVM().UncondJump(loc2++, loc2 + 1);
+                // Compiler.getVM().CondJump(loc1, loc1 + 2);
+                // Compiler.getVM().UncondJump(loc1 + 1, loc2);
+                // Compiler.getVM().IntLoad(loc2++, 1);
+                CompilerContext.getcodeArray().put(loc2++, new IInstructions.UncondJump(loc2 + 1));
+                CompilerContext.getcodeArray().put(loc1, new IInstructions.CondJump(loc1 + 2));
+                CompilerContext.getcodeArray().put(loc1 + 1, new IInstructions.UncondJump(loc2));
+                CompilerContext.getcodeArray().put(loc2++, new IInstructions.LoadImInt(1));
+                return loc2;
+            }
+        }
+
     }
 
     public static class RoutineCall extends AbstractNode {
@@ -1841,4 +1958,5 @@ public class AbstractTree {
         }
     }
 }
+    }
 }
