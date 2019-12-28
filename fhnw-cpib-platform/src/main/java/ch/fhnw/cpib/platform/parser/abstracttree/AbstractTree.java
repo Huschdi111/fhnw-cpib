@@ -22,11 +22,11 @@ public class AbstractTree {
 
         public final ProgParam progparam;
 
-        public final Param.Declaration declaration;
+        public final Declaration declaration;
 
         public final Cmd cmd;
 
-        public Program(Tokens.IdentifierToken identifier, ProgParam progparam, Param.Declaration declaration, Cmd cmd) {
+        public Program(Tokens.IdentifierToken identifier, ProgParam progparam, Declaration declaration, Cmd cmd) {
             super(0);
             this.identifier = identifier;
             this.progparam = progparam;
@@ -61,7 +61,7 @@ public class AbstractTree {
             int loc2 = loc;
 
             if (declaration != null)
-                if(declaration instanceof Param.ProcDecl || declaration instanceof Param.FunDecl){
+                if(declaration instanceof ProcDecl || declaration instanceof Param.FunDecl){
                     loc1 = declaration.nextdeclaration.generateCode(loc1);
                     loc2 = declaration.generateCode(loc1+1);
                     Checker.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
@@ -227,6 +227,7 @@ public class AbstractTree {
                 nextparam.generateCode(methodscpecbuilder);
             }
         }
+    }
 
     public abstract static class Declaration extends AbstractNode {
 
@@ -418,14 +419,14 @@ public class AbstractTree {
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
                 int loc1 = loc;
-                Routine routine = Checker.getRoutineTable().lookup(identation.getValue());
+                Routine routine = Checker.getRoutineTable().lookup(getIdendation());
                 Checker.setScope(routine.getScope());
                 routine.setAddress(loc1);
                 int i = 0 - routine.getParameters().size();
                 for (Parameter p : routine.getParameters()){
                     if (p.getMechMode() == Tokens.MechModeToken.MechMode.COPY){
                         //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                        Checker.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
+                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"",p.getMechMode().getValue().toString()});
                         //Compiler.getcodeArray().put(loc1, new Deref());
                         //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
                     }else{
@@ -559,7 +560,7 @@ public class AbstractTree {
 
         public abstract void checkCode(Checker checker) throws CheckerException;
 
-        public abstract int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
+        public abstract int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class SkipCmd extends Cmd {
@@ -581,8 +582,9 @@ public class AbstractTree {
                 getNextCmd().checkCode(checker);
             }
         }
+
         @Override
-        public int code(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return (nextcmd != null ? nextcmd.checkCode(loc, routine) : loc);
         }
     }
@@ -651,7 +653,7 @@ public class AbstractTree {
         }
 
         @Override
-        public int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
 
@@ -667,27 +669,7 @@ public class AbstractTree {
                 expression1 = (StoreExpr) ((StoreExpr.DyadicExpr) expression1).getExpr1();
             }
 
-            if (expression1 instanceof ExprAr) {
-                Checker.getcodeArray().put(loc,
-                    new IInstructions.LoadAddrRel(getArrayAdress(((ExprArray) expression1).ident.getValue())));
-                loc1 = loc + 1;
-                if(((ExprArray) expression1).expression instanceof ExprStore){
-                    loc1 = ((ExprStore)((ExprArray) expression1).expression).codeRef(loc1, true, true, routine);
-                }else{
-                    loc1 = ((ExprArray) expression1).expression.code(loc1, routine);
-                }
-
-
-                // Compiler.getcodeArray().put(loc+1,new LoadImInt(new
-                // Integer(((ExprArray)targetExpression).expression.getValue()).intValue()));
-                CompilerException.getcodeArray().put(loc1,
-                    new IInstructions.LoadImInt(getArrayOffset(((ExprArray) expression1).ident.getValue())));
-                Checker.getcodeArray().put(++loc1, new IInstructions.SubInt());
-                CompilerException.getcodeArray().put(++loc1, new IInstructions.AddInt());
-                loc1++;
-            } else {
-                loc1 = expression1.generateCode(loc, routine);
-            }
+            loc1 = expression1.generateCode(loc, routine);
 
             if (!(expression1 instanceof ExprStore)) {
                 loc1 = expression1.generateCode(loc1, routine);
@@ -740,12 +722,13 @@ public class AbstractTree {
             }
         }
 
+
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
 
-        @Override//TODO implement
+        /*@Override//TODO implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             methodscpecbuilder.addCode("switch(");
             expression.generateCode(methodscpecbuilder);
@@ -765,7 +748,7 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().generateCode(methodscpecbuilder);
             }
-        }
+        }*/
     }
 
     public static class RepCaseCmd extends Cmd {
@@ -828,11 +811,16 @@ public class AbstractTree {
         }
 
         @Override
+        public int code(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
+        }
+
+        @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
 
-        @Override//TODO implement
+        /*@Override//TODO implement
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             methodspecbuilder.beginControlFlow("case " + literal.getValue() + " :");
             cmd.generateCode(methodspecbuilder);
@@ -841,7 +829,7 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().generateCode(methodspecbuilder);
             }
-        }
+        }*/
     }
 
     public static class CondCmd extends Cmd {
@@ -892,7 +880,7 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = expression.generateCode(loc, routine);
             int loc2 = ifCmd.code(loc1 + 1, routine);
             // Compiler.getVM().CondJump(loc1, loc2 + 1);
@@ -1280,7 +1268,7 @@ public class AbstractTree {
                 + getHead("</TypedIdentType>");
         }
 
-        @Override//TODO Implement
+        /*@Override//TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             switch (type) {
                 case BOOL:
@@ -1295,7 +1283,7 @@ public class AbstractTree {
                     break;
             }
             methodscpecbuilder.addCode(" " + identifier.getName());
-        }
+        }*/
 
         public String getParameterName() {
             return identifier.getName();
@@ -1362,7 +1350,7 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             // Compiler.getVM().IntLoad(loc, literal.getLiteral());
-            Checker.getcodeArray().put(loc, new IInstructions.LoadImInt(literal.getLiteral()));
+            Checker.getcodeArray().put(loc, new IInstructions.LoadImInt(Integer.valueOf(literal.getValue())));
             return loc + 1;
         }
     }
@@ -1431,10 +1419,10 @@ public class AbstractTree {
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            Store store = (Store) Checker.getScope().getStoreTable().getStore(getIdendation().getValue());
+            Store store = (Store) Checker.getScope().getStoreTable().getStore(getIdendation());
             int loc1 = loc;
             if (routine) {
-                if (Checker.getprocIdentTable().containsKey(ident.getValue())) {
+                if (Checker.getprocIdentTable().containsKey(identifier.getName())) {
                     //Compiler.getcodeArray().put(loc, new LoadAddrRel(Integer.parseInt(Compiler.getprocIdentTable().get(ident.getValue())[0])));
                     if(store==null){
                         Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(ident.getValue())[0])));
@@ -1445,16 +1433,16 @@ public class AbstractTree {
                     }
 
                 } else {
-                    Checker.addIdentTable(ident.getValue(), loc);
+                    Checker.addIdentTable(identifier.getName(), loc);
                     return ((store != null) ? store.codeLoad(loc, routine) : loc);
                 }
             } else {
-                if (Checker.getIdentTable().containsKey(ident.getValue())) {
+                if (Checker.getIdentTable().containsKey(identifier.getName())) {
                     Checker.getcodeArray().put(loc,
-                        new IInstructions.LoadAddrRel(Checker.getIdentTable().get(ident.getValue()).intValue()));
+                        new IInstructions.LoadAddrRel(Checker.getIdentTable().get(identifier.getName()).intValue()));
                     return loc + 1;
                 } else {
-                    Checker.addIdentTable(ident.getValue(), loc);
+                    Checker.addIdentTable(identifier.getName(), loc);
                     return ((store != null) ? store.codeLoad(loc, routine) : loc);
                 }
             }
