@@ -61,7 +61,7 @@ public class AbstractTree {
             int loc2 = loc;
 
             if (declaration != null)
-                if(declaration instanceof ProcDecl || declaration instanceof Param.FunDecl){
+                if(declaration instanceof ProcDecl || declaration instanceof FunDecl){
                     loc1 = declaration.nextdeclaration.generateCode(loc1);
                     loc2 = declaration.generateCode(loc1+1);
                     Checker.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
@@ -419,47 +419,26 @@ public class AbstractTree {
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
                 int loc1 = loc;
-                Routine routine = Checker.getRoutineTable().lookup(getIdendation());
+                Routine routine = Checker.getRoutineTable().lookup(identifier.getName());
                 Checker.setScope(routine.getScope());
                 routine.setAddress(loc1);
                 int i = 0 - routine.getParameters().size();
                 for (Parameter p : routine.getParameters()){
                     if (p.getMechMode() == Tokens.MechModeToken.MechMode.COPY){
-                        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"",p.getMechMode().getValue().toString()});
-                        //Compiler.getcodeArray().put(loc1, new Deref());
-                        //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"",p.getMechMode().name()});
                     }else{
-                        //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                        Checker.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
-                        //Compiler.getcodeArray().put(loc1, new LoadAddrRel(Compiler.getIdentTable().get(p.getType().getIdent()).intValue()));
-                        //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
+                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"","REF"});
                     }
                     i += 1;
                 }
-                Checker.getprocIdentTable().put(returnDecl.typedIdent.getIdent().getValue(), new String[] {(0- routine.getParamList().size() - 1) +"","REF"});
-                //returnDecl.code(loc1);
-                //LoadAddrRel of Variables.
-                // Compiler.getVM().Enter(loc1++, routine.getInOutCopyCount() +
-                // getCount(), 0);
-                //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                //loc1 = param.codeIn(loc1, routine.getParamList().size(), 0);
+                Checker.getprocIdentTable().put(storedeclaration..getIdent().getValue(), new String[] {(0- routine.getParameters().size() - 1) +"","REF"});
                 loc1 = cmd.generateCode(loc1, true);
-                //loc1 = param.codeOut(loc1, routine.getParamList().size(), 0);
-                // Compiler.getVM().Return(loc1++, 0);
                 Checker.getcodeArray().put(loc1, new IInstructions.Return(1));
-                //Compiler.setScope(null);
                 return ++loc1;
-                // return (nextDecl!=null?nextDecl.code(loc1):loc1);
-                // return (nextDecl!=null?nextDecl.code(loc1):loc1);
-                // Zuerst AllocBlock für return value
-                // Parameter auf Stack legen in korrekter Form (LValue und RValue
-                // check)
-                // call ablegen mit addresse der func im codeArray
             }
     }
 
-    public static class ProcDecl extends Param.Declaration {
+    public static class ProcDecl extends Declaration {
 
         public final Tokens.IdentifierToken identifier;
 
@@ -467,11 +446,11 @@ public class AbstractTree {
 
         public final StoreExpr.GlobalImport globalimport;
 
-        public final Param.Declaration declaration;
+        public final Declaration declaration;
 
         public final Cmd cmd;
 
-        public ProcDecl(Tokens.IdentifierToken identifier, Param param, StoreExpr.GlobalImport globalimport, Param.Declaration declaration, Param.Declaration nextdeclaration, Cmd cmd, int idendation) {
+        public ProcDecl(Tokens.IdentifierToken identifier, Param param, StoreExpr.GlobalImport globalimport, Declaration declaration, Declaration nextdeclaration, Cmd cmd, int idendation) {
             super(nextdeclaration, idendation);
             this.identifier = identifier;
             this.param = param;
@@ -517,7 +496,7 @@ public class AbstractTree {
             return null;
         }
 
-        @Override
+        /*@Override
         public void generateCode(TypeSpec.Builder typescpecbuilder) {
             MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder(identifier.getName());
             methodspecbuilder.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
@@ -537,7 +516,7 @@ public class AbstractTree {
             }
 
             typescpecbuilder.addMethod(methodspecbuilder.build());
-        }
+        }*/
 
         @Override
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
@@ -1773,7 +1752,7 @@ public class AbstractTree {
                 }
 
                 return loc1 + 1;
-            } else if (operator.getValue() == OperatorAttribute.CAND) {
+            } else if (operation.getOperation() == Tokens.OperationToken.Operation.CAND) {
                 int loc2 = expression2.generateCode(loc1 + 1, routine);
                 // Compiler.getVM().UncondJump(loc2++, loc2 + 1);
                 // Compiler.getVM().CondJump(loc1, loc2);
