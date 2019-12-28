@@ -1,6 +1,6 @@
 package ch.fhnw.cpib.platform.checker;
 
-import ch.fhnw.cpib.platform.generator.CompilerContext;
+import ch.fhnw.cpib.platform.generator.Checker;
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
@@ -72,7 +72,7 @@ public class Routine {
 
     public final void codeCalls() throws ICodeArray.CodeTooSmallError {
         for (int loc : calls) {
-            CompilerContext.getcodeArray().put(loc, new IInstructions.Call(address));;
+            Checker.getcodeArray().put(loc, new IInstructions.Call(address));;
         }
     }
 

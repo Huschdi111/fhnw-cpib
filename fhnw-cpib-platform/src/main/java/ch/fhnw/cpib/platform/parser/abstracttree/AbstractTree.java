@@ -4,7 +4,7 @@ import ch.fhnw.cpib.platform.checker.*;
 import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.generator.GeneratorException;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
-import ch.fhnw.cpib.platform.generator.CompilerContext;
+import ch.fhnw.cpib.platform.generator.Checker;
 import java.util.*;
 
 public class AbstractTree {
@@ -57,13 +57,13 @@ public class AbstractTree {
                 if (declaration != null) {
                     loc1 = declaration.nextdeclaration.generateCode(loc1);
                     loc2 = declaration.generateCode(loc1 + 1);
-                    CompilerContext.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
+                    Checker.getcodeArray().put(loc1, new IInstructions.UncondJump(loc2));
                     loc2 = cmd.generateCode(loc2);
                 }
-                for (Routine routine : CompilerContext.getRoutineTable().getTable().values()) {
+                for (Routine routine : Checker.getRoutineTable().getTable().values()) {
                     routine.codeCalls();
                 }
-                CompilerContext.getcodeArray().put(loc2, new IInstructions.Stop());
+                Checker.getcodeArray().put(loc2, new IInstructions.Stop());
                 return -1;
             }catch(Exception e){
                 throw new GeneratorException("Code Generation for Program failed", e);
@@ -324,9 +324,9 @@ public class AbstractTree {
                     if (d.nextdeclaration == null) {
                         nextDeclNull = true;
                     }
-                    CompilerContext.getcodeArray().put(loc1, new IInstructions.AllocBlock(1));
-                    CompilerContext.addIdentTable(((StoDecl) d).typedident.getIdentifier().getName(), CompilerContext.getstackAddressHelper());
-                    CompilerContext.setstackAddressHelper(1);
+                    Checker.getcodeArray().put(loc1, new IInstructions.AllocBlock(1));
+                    Checker.addIdentTable(((StoDecl) d).typedident.getIdentifier().getName(), Checker.getstackAddressHelper());
+                    Checker.setstackAddressHelper(1);
                     loc1++;
                 }
                 return loc1;
@@ -378,7 +378,7 @@ public class AbstractTree {
             //check if function exist in global routine table
             Routine function = new Routine(identifier.getName(), RoutineType.FUNCTION);
             //store function in global routine table if not
-            if (!checker.getGlobalRoutineTable().insert(function)) {
+            if (!checker.getRoutineTable().insert(function)) {
                 throw new CheckerException("Function " + identifier.getName() + " is already declared.");
             }
             checker.setScope(function.getScope());
@@ -485,7 +485,7 @@ public class AbstractTree {
         public Tokens.TypeToken.Type checkCode(Checker checker) throws CheckerException {
             //store function in global procedure table
             Routine procedure = new Routine(identifier.getName(), RoutineType.PROCEDURE);
-            checker.getGlobalRoutineTable().insert(procedure);
+            checker.getRoutineTable().insert(procedure);
             checker.setScope(procedure.getScope());
             if (param != null) {
                 param.checkCode(checker, procedure);
@@ -1313,7 +1313,7 @@ public class AbstractTree {
                 //check if store is declared on global scope
                 store = checker.getGlobalStoreTable().getStore(identifier.getName());
                 //check if identifier in routine defined
-                HashMap map = checker.getGlobalRoutineTable().getTable();
+                HashMap map = checker.getRoutineTable().getTable();
                 Routine routine = null;
                 Iterator it = map.entrySet().iterator();
                 while (it.hasNext()) {
@@ -1587,7 +1587,7 @@ public class AbstractTree {
         }
 
         public ExpressionInfo checkCode(Checker checker) throws CheckerException {
-            Routine calledroutine = checker.getGlobalRoutineTable().lookup(identifier.getName());
+            Routine calledroutine = checker.getRoutineTable().lookup(identifier.getName());
             if (calledroutine == null) {
                 throw new CheckerException("Routine " + identifier.getName() + " is not declared.");
             }

@@ -1,7 +1,7 @@
 package ch.fhnw.cpib.platform.generator;
 
 import ch.fhnw.cpib.platform.TestFiles;
-import ch.fhnw.cpib.platform.checker.Checker;
+import ch.fhnw.cpib.platform.generator.Checker;
 import ch.fhnw.cpib.platform.parser.Parser;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;

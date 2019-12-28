@@ -1,6 +1,6 @@
 package ch.fhnw.cpib.platform.parser.concretetree;
 
-import ch.fhnw.cpib.platform.checker.Checker;
+import ch.fhnw.cpib.platform.generator.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;

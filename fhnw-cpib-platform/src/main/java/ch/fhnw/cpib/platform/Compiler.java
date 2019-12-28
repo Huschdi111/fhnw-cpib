@@ -1,8 +1,7 @@
 package ch.fhnw.cpib.platform;
 
-import ch.fhnw.cpib.platform.checker.Checker;
+import ch.fhnw.cpib.platform.generator.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
-import ch.fhnw.cpib.platform.generator.Generator;
 import ch.fhnw.cpib.platform.generator.GeneratorException;
 import ch.fhnw.cpib.platform.parser.Parser;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
@@ -20,12 +19,12 @@ public class Compiler {
 
     private final Parser parser;
 
-    private final Generator generator;
+    private final Checker checker;
 
     public Compiler() {
         this.scanner = new Scanner();
         this.parser = new Parser();
-        this.generator = new Generator();
+        this.checker = new Checker();
     }
 
     public void compileString(String content) {
@@ -59,12 +58,12 @@ public class Compiler {
             System.out.println("Done");
             System.out.println();
 
-            // Generate the Java code
+            /*// Generate the Java code
             System.out.println("===== Generate Java code =====");
             String javacode = generator.generateJavaCode(abstractprogram);
             System.out.println(javacode);
             System.out.println();
-
+            */
             /*// Generate the Java JAR file
             System.out.println("===== Generate Java JAR file =====");
             File jarfile = generator.generateJarFile(javacode, abstractprogram);
@@ -89,10 +88,10 @@ public class Compiler {
         } catch (CheckerException exception) {
             System.out.println("During the checking process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        } catch (GeneratorException exception) {
+        } /*catch (GeneratorException exception) {
             System.out.println("During the generation process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        }
+        }*/
     }
 
     public static void main(String[] args) {

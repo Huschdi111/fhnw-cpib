@@ -1,37 +1,39 @@
 package ch.fhnw.cpib.platform.generator;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
+import ch.fhnw.cpib.platform.checker.RoutineTable;
+import ch.fhnw.cpib.platform.checker.Scope;
+import ch.fhnw.cpib.platform.checker.StoreTable;
+import ch.fhnw.cpib.platform.checker.SwitchTable;
+import ch.fhnw.cpib.platform.javavm.CodeArray;
+import ch.fhnw.cpib.platform.javavm.ICodeArray;
+import ch.fhnw.cpib.platform.javavm.IVirtualMachine;
+import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import java.util.HashMap;
-import ch.fhnw.cpib.platform.checker.*;
-import ch.fhnw.cpib.platform.javavm.*;
 
-public class CompilerContext {
-    //Groesse der einzelnen speicher plätze der vm
+public final class Checker {
+
     private static final int STORE_SIZE = 1024;
-    //List der Routinen (Procedures oder Functions)
-    private static RoutineTable routineTable = new RoutineTable();
-    //Liste der Global deklarierten Variablen verwaltet den Store
-    private static StoreTable globalStoreTable = new StoreTable();
-    //Identifier Table (Ich weiss noch nicht für was der ist)
-    private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();
-    //Scope der Funktion oder des Blockes (Besitzt einen eigenen StoreTable für die eigenen lokalen Variablen)
-    private static Scope scope = null;
-    //VM Interface
-    private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
-    //Ergebnis Array der Code-Generierung enthält alle Instructions zum ausführen
-    private static CodeArray codeArray = new CodeArray(STORE_SIZE);
-    //
-    private static int stackAddressHelper = 0; //TODO what is this?
-    //private static DeclarationProcedure declaration; //TODO what is this?
 
+    private static RoutineTable routineTable = new RoutineTable();
+    private static StoreTable globalStoreTable = new StoreTable();
+    private static StoreTable arrayRangeTable = new StoreTable();
+    private static SwitchTable globalSwitchTable = new SwitchTable();
+    private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();
+    private static Scope scope = null;
+    private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
+    private static CodeArray codeArray = new CodeArray(STORE_SIZE);
+    private static int stackAddressHelper = 0;
+    private static AbstractTree.ProcDecl declaration;
 
     private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
     //private static CodeArray tempcodeArray = new CodeArray(STORE_SIZE);
 
     public static IVirtualMachine getVM() {
         return vm;
+    }
+
+    public static StoreTable getArrayStoreTable() {
+    	return arrayRangeTable;
     }
 
     public static HashMap<String, String[]> getprocIdentTable() {
@@ -75,16 +77,16 @@ public class CompilerContext {
         return codeArray;
     }
 
+    public static SwitchTable getGlobalSwitchTable() {
+        return globalSwitchTable;
+    }
+
     //public static ICodeArray gettempcodeArray() {
     //    return tempcodeArray;
     //}
 
     public static void setScope(final Scope scope) {
-        CompilerContext.scope = scope;
-    }
-
-    private CompilerContext() {
-        throw new AssertionError("Instantiating utility class...");
+        Checker.scope = scope;
     }
 
 }
