@@ -418,19 +418,19 @@ public class AbstractTree {
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
                 int loc1 = loc;
-                Routine routine = Checker.getRoutineTable().getRoutine(identation.getValue());
+                Routine routine = Checker.getRoutineTable().lookup(identation.getValue());
                 Checker.setScope(routine.getScope());
                 routine.setAddress(loc1);
-                int i = 0 - routine.getParamList().size();
-                for (ch.fhnw.cpib.compiler.context.Parameter p : routine.getParamList()){
+                int i = 0 - routine.getParameters().size();
+                for (Parameter p : routine.getParameters()){
                     if (p.getMechMode().getValue().toString().toUpperCase().equals("COPY")){
                         //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                        Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
+                        Checker.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
                         //Compiler.getcodeArray().put(loc1, new Deref());
                         //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
                     }else{
                         //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
-                        Compiler.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
+                        Checker.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"","REF"});
                         //Compiler.getcodeArray().put(loc1, new LoadAddrRel(Compiler.getIdentTable().get(p.getType().getIdent()).intValue()));
                         //Compiler.getcodeArray().put(loc1, new IInstructions.Store());
                     }
@@ -559,7 +559,7 @@ public class AbstractTree {
 
         public abstract void checkCode(Checker checker) throws CheckerException;
 
-        public abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
+        public abstract int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class SkipCmd extends Cmd {
@@ -582,7 +582,7 @@ public class AbstractTree {
             }
         }
         @Override
-        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int code(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return (nextcmd != null ? nextcmd.checkCode(loc, routine) : loc);
         }
     }
@@ -651,7 +651,7 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
 
@@ -928,11 +928,6 @@ public class AbstractTree {
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
-        }
-
-        @Override//TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-
         }
     }
 
@@ -1741,7 +1736,7 @@ public class AbstractTree {
                 loc1 = expression1.code(loc, routine);
             }
 
-            if (operator.getValue() != OperatorAttribute.CAND && operator.getValue() != OperatorAttribute.COR) {
+            if (operation.getOperation() != OperatorAttribute.CAND && operator.getValue() != OperatorAttribute.COR) {
 
                 if (expression2 instanceof ExprStore) {
                     loc1 = ((ExprStore) expression2).codeRef(loc1, true, true, routine);
@@ -1752,7 +1747,7 @@ public class AbstractTree {
                     loc1 = expression2.code(loc1, routine);
                 }
 
-                switch (operatortor.getValue()) {
+                switch (operation.getOperation()) {
                     case DOT:
                         break;
                     case PLUS:
@@ -1767,11 +1762,11 @@ public class AbstractTree {
                         // Compiler.getVM().IntMult(loc1);
                         Checker.getcodeArray().put(loc1, new IInstructions.MultInt());
                         break;
-                    case DIV:
+                    case DIVE:
                         // Compiler.getVM().IntDiv(loc1);
                         Checker.getcodeArray().put(loc1, new IInstructions.DivTruncInt());
                         break;
-                    case MOD:
+                    case MODE:
                         // Compiler.getVM().IntMod(loc1);
                         Checker.getcodeArray().put(loc1, new IInstructions.ModTruncInt());
                         break;

@@ -20,6 +20,16 @@ public class Routine {
 
     private List<AbstractTree.GlobalImport> globalimports = new ArrayList<>();
 
+    private int address;
+
+    public int getAddress() {
+        return address;
+    }
+
+    public void setAddress(int address) {
+        this.address = address;
+    }
+
     public Routine(String identifier, RoutineType routinetype) {
         this.identifier = identifier;
         this.routinetype = routinetype;
