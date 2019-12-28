@@ -558,6 +558,8 @@ public class AbstractTree {
         }
 
         public abstract void checkCode(Checker checker) throws CheckerException;
+
+        public abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class SkipCmd extends Cmd {
@@ -579,9 +581,9 @@ public class AbstractTree {
                 getNextCmd().checkCode(checker);
             }
         }
-
-        public int generateCode(int loc) {
-            return (getNextCmd() != null ? getNextCmd().generateCode(loc, routine) : loc);
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return (nextcmd != null ? nextcmd.checkCode(loc, routine) : loc);
         }
     }
 
@@ -646,6 +648,11 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().checkCode(checker);
             }
+        }
+
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
@@ -733,6 +740,11 @@ public class AbstractTree {
             }
         }
 
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
+        }
+
         @Override//TODO implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             methodscpecbuilder.addCode("switch(");
@@ -813,6 +825,11 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().checkCode(checker);
             }
+        }
+
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
         }
 
         @Override//TODO implement
@@ -908,6 +925,11 @@ public class AbstractTree {
             repArrowCmd.checkCode(checker);
         }
 
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
+        }
+
         @Override//TODO Implement
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
 
@@ -947,6 +969,11 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().checkCode(checker);
             }
+        }
+
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
         }
 
         @Override//TODO implement
@@ -993,6 +1020,11 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().checkCode(checker);
             }
+        }
+
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
         }
 
         @Override//TODO Implement
@@ -1042,6 +1074,11 @@ public class AbstractTree {
             if (getNextCmd() != null) {
                 getNextCmd().checkCode(checker);
             }
+        }
+
+        @Override
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0;
         }
 
         @Override
