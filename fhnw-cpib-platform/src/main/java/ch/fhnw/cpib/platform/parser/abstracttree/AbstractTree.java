@@ -70,7 +70,7 @@ public class AbstractTree {
                 }
             loc2 = cmd.generateCode(loc2, false);
             for (Routine routine : Checker.getRoutineTable().getTable().values()) {
-                routine.code();
+                routine.codeCalls();
             }
             Checker.getcodeArray().put(loc2, new IInstructions.Stop());
             return loc2;
@@ -423,7 +423,7 @@ public class AbstractTree {
                 routine.setAddress(loc1);
                 int i = 0 - routine.getParameters().size();
                 for (Parameter p : routine.getParameters()){
-                    if (p.getMechMode().getValue().toString().toUpperCase().equals("COPY")){
+                    if (p.getMechMode() == Tokens.MechModeToken.MechMode.COPY){
                         //Compiler.getcodeArray().put(loc1, new AllocBlock(1));
                         Checker.getprocIdentTable().put(p.getType().getIdent().getValue(), new String[] {i+"",p.getMechMode().getValue().toString()});
                         //Compiler.getcodeArray().put(loc1, new Deref());
@@ -1022,20 +1022,6 @@ public class AbstractTree {
             return 0;
         }
 
-        @Override//TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode("else if(");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(") {" + System.lineSeparator());
-
-            cmd.generateCode(methodscpecbuilder);
-
-            methodscpecbuilder.addCode("}" + System.lineSeparator());
-
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
-            }
-        }
     }
 
     public static class WhileCmd extends Cmd {
