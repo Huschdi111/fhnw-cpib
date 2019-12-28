@@ -6,12 +6,8 @@ import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.scanner.tokens.Terminal;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
 import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException;
-
-import javax.lang.model.element.Modifier;
 import java.util.*;
 
 public class AbstractTree {
@@ -121,7 +117,7 @@ public class AbstractTree {
             }
         }
 
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
+        /*public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             typedident.generateCode(methodscpecbuilder);
             TypedIdentType typedidenttype = (TypedIdentType) typedident;
             switch (typedidenttype.getParameterType()) {
@@ -140,7 +136,7 @@ public class AbstractTree {
             if (nextprogparam != null) {
                 nextprogparam.generateCode(methodscpecbuilder);
             }
-        }
+        }*/
     }
 
     public static class Param extends AbstractNode {
@@ -244,7 +240,7 @@ public class AbstractTree {
 
         public abstract Tokens.TypeToken.Type checkCode(Checker checker) throws CheckerException;
 
-        public abstract void generateCode(MethodSpec.Builder methodscpecbuilder);
+        public abstract int generateCode(int loc) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class StoDecl extends Declaration {
@@ -297,6 +293,11 @@ public class AbstractTree {
         }
 
         @Override
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+            return 0;
+        }
+
+        /*@Override
         public void generateCode(MethodSpec.Builder methodspecbuilder) {
             TypedIdentType typedidenttype = (TypedIdentType) typedident;
             switch (typedidenttype.getParameterType()) {
@@ -315,9 +316,9 @@ public class AbstractTree {
             if (getNextDeclaration() != null) {
                 getNextDeclaration().generateCode(methodspecbuilder);
             }
-        }
+        }*/
 
-        @Override
+        /*@Override
         public void generateCode(TypeSpec.Builder typespecbuilder) {
             TypedIdentType typedidenttype = (TypedIdentType) typedident;
             switch (typedidenttype.getParameterType()) {
@@ -344,7 +345,7 @@ public class AbstractTree {
             if (getNextDeclaration() != null) {
                 getNextDeclaration().generateCode(typespecbuilder);
             }
-        }
+        }*/
     }
 
     public static class FunDecl extends Declaration {
@@ -410,11 +411,6 @@ public class AbstractTree {
                 getNextDeclaration().checkCode(checker);
             }
             return null;
-        }
-
-        @Override
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
@@ -496,6 +492,11 @@ public class AbstractTree {
             return null;
         }
 
+        @Override
+        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+            return 0;
+        }
+
         /*@Override
         public void generateCode(TypeSpec.Builder typescpecbuilder) {
             MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder(identifier.getName());
@@ -517,11 +518,6 @@ public class AbstractTree {
 
             typescpecbuilder.addMethod(methodspecbuilder.build());
         }*/
-
-        @Override
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            // Just make the compiler happy
-        }
     }
 
     public abstract static class Cmd extends AbstractNode {
@@ -790,11 +786,6 @@ public class AbstractTree {
         }
 
         @Override
-        public int code(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
-        }
-
-        @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
@@ -861,13 +852,13 @@ public class AbstractTree {
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = expression.generateCode(loc, routine);
-            int loc2 = ifCmd.code(loc1 + 1, routine);
+            int loc2 = cmd.generateCode(loc1 + 1, routine);
             // Compiler.getVM().CondJump(loc1, loc2 + 1);
             Checker.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
-            int loc3 = elseCmd.code(loc2 + 1, routine);
+            int loc3 = othercmd.generateCode(loc2 + 1, routine);
             // Compiler.getVM().UncondJump(loc2, loc3);
             Checker.getcodeArray().put(loc2, new IInstructions.UncondJump(loc3));
-            return (nextcmd != null ? nextcmd.code(loc3, routine) : loc3);
+            return (nextcmd != null ? nextcmd.generateCode(loc3, routine) : loc3);
         }
     }
 
