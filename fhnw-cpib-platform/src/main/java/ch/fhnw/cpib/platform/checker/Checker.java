@@ -1,32 +1,90 @@
 package ch.fhnw.cpib.platform.checker;
 
+import java.util.HashMap;
+
+import ch.fhnw.cpib.platform.javavm.*;
+
 public class Checker {
-
-    private StoreTable globalStoreTable = new StoreTable();
-
-    private RoutineTable globalRoutineTable = new RoutineTable();
-
+    //Groesse der einzelnen speicher plätze der vm
+    private static final int STORE_SIZE = 1024;
+    //List der Routinen (Procedures oder Functions)
+    private static RoutineTable routineTable = new RoutineTable();
+    //Liste der Global deklarierten Variablen verwaltet den Store
+    private static StoreTable globalStoreTable = new StoreTable();
+    //Identifier Table (Ich weiss noch nicht für was der ist)
+    private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();
+    //Scope der Funktion oder des Blockes (Besitzt einen eigenen StoreTable für die eigenen lokalen Variablen)
+    private static Scope scope = null;
+    //VM Interface
+    private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
+    //Ergebnis Array der Code-Generierung enthält alle Instructions zum ausführen
+    private static CodeArray codeArray = new CodeArray(STORE_SIZE);
     private SwitchTable globalSwitchTable = new SwitchTable();
+    //
+    private static int stackAddressHelper = 0; //TODO what is this?
+    //private static DeclarationProcedure declaration; //TODO what is this?
 
-    private Scope scope = null;
 
-    public StoreTable getGlobalStoreTable() {
+    private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
+    //private static CodeArray tempcodeArray = new CodeArray(STORE_SIZE);
+
+    public static IVirtualMachine getVM() {
+        return vm;
+    }
+
+    public static HashMap<String, String[]> getprocIdentTable() {
+        return procidentTable;
+    }
+
+    public static void addprocIdentTable(String ident, String[] posMech) {
+        procidentTable.put(ident, posMech);
+    }
+
+    public static void addIdentTable(String name, int i) {
+        identTable.put(name, new Integer(i));
+    }
+
+    public static HashMap<String, Integer> getIdentTable() {
+        return identTable;
+    }
+
+    public static StoreTable getGlobalStoreTable() {
         return globalStoreTable;
     }
 
-    public RoutineTable getGlobalRoutineTable() {
-        return globalRoutineTable;
+    public static RoutineTable getRoutineTable() {
+        return routineTable;
     }
 
-    public SwitchTable getGlobalSwitchTable() {
-        return globalSwitchTable;
-    }
+    public SwitchTable getGlobalSwitchTable() { return globalSwitchTable; }
 
-    public Scope getScope() {
+    public static Scope getScope() {
         return scope;
     }
 
-    public void setScope(Scope scope) {
-        this.scope = scope;
+    public static int getstackAddressHelper() {
+        return stackAddressHelper;
     }
+
+    public static void setstackAddressHelper(int offset) {
+        stackAddressHelper = stackAddressHelper + offset;
+    }
+
+
+    public static ICodeArray getcodeArray() {
+        return codeArray;
+    }
+
+    //public static ICodeArray gettempcodeArray() {
+    //    return tempcodeArray;
+    //}
+
+    public static void setScope(final Scope scope) {
+        Checker.scope = scope;
+    }
+
+    private Checker() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+
 }
