@@ -1,6 +1,13 @@
 package ch.fhnw.cpib.platform.checker;
 
+import ch.fhnw.cpib.platform.javavm.CodeArray;
+import ch.fhnw.cpib.platform.javavm.IVirtualMachine;
+
+import java.util.HashMap;
+
 public class Checker {
+
+    private static final int STORE_SIZE = 1024;
 
     private StoreTable globalStoreTable = new StoreTable();
 
@@ -8,7 +15,16 @@ public class Checker {
 
     private SwitchTable globalSwitchTable = new SwitchTable();
 
+    private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
+
     private Scope scope = null;
+
+    private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
+    //Ergebnis Array der Code-Generierung enthält alle Instructions zum ausführen
+    private static CodeArray codeArray = new CodeArray(STORE_SIZE);
+    //
+    private static int stackAddressHelper = 0; //TODO what is this?
+    //private static DeclarationProcedure declaration; //TODO what is this?
 
     public StoreTable getGlobalStoreTable() {
         return globalStoreTable;

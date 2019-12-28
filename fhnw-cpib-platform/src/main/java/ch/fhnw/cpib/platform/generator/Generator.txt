@@ -20,8 +20,7 @@ public class Generator {
 
     public String generateJavaCode(AbstractTree.Program program) throws GeneratorException {
         // Build the Java file
-        JavaFile javafile = program.generateCode();
-
+        JavaFile javafile = new JavaFile(new JavaFile.Builder()); //= program.generateCode(0);
         // Replace the package namespace
         String javacode = javafile.toString();
         javacode = javacode.replace("package fhnw;", "");

@@ -1,5 +1,8 @@
 package ch.fhnw.cpib.platform.checker;
 
+import ch.fhnw.cpib.platform.generator.Checker;
+import ch.fhnw.cpib.platform.javavm.ICodeArray;
+import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 
@@ -19,6 +22,10 @@ public class Routine {
     private List<Parameter> param = new ArrayList<>();
 
     private List<AbstractTree.GlobalImport> globalimports = new ArrayList<>();
+
+    private List<Integer> calls = new ArrayList<Integer>();
+
+    private int address;
 
     public Routine(String identifier, RoutineType routinetype) {
         this.identifier = identifier;
@@ -47,6 +54,10 @@ public class Routine {
         return returntype;
     }
 
+    public final void addCall(final int loc) {
+        calls.add(loc);
+    }
+
     public void addGlobalImport(AbstractTree.GlobalImport globalimport) {
         globalimports.add(globalimport);
     }
@@ -57,6 +68,12 @@ public class Routine {
 
     public void addParameter(Parameter p) {
         param.add(p);
+    }
+
+    public final void codeCalls() throws ICodeArray.CodeTooSmallError {
+        for (int loc : calls) {
+            Checker.getcodeArray().put(loc, new IInstructions.Call(address));;
+        }
     }
 
 }

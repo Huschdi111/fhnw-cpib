@@ -1,6 +1,6 @@
 package ch.fhnw.cpib.platform.parser;
 
-import ch.fhnw.cpib.platform.checker.Checker;
+import ch.fhnw.cpib.platform.generator.Checker;
 import ch.fhnw.cpib.platform.checker.Symbol;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
