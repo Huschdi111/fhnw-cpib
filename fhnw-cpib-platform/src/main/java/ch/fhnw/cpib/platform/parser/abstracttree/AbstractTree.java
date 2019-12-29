@@ -993,6 +993,7 @@ public class AbstractTree {
     public static class InputCmd extends Cmd {
 
         public final Expression expression;
+        public Tokens.TypeToken.Type type;
 
         public InputCmd(Expression expression, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
@@ -1017,20 +1018,15 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
-            if (type.getValue == TypeAttribute.BOOL) {
-                if (expression instanceof StoreExpr) {
+            loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine);
+            if(expression instanceof StoreExpr) {
+                if (type == Tokens.TypeToken.Type.BOOL) {
                     Checker.getcodeArray().put(loc1++, new IInstructions.InputBool(((StoreExpr) expression).identifier.getName()));
                 } else {
-                    throw new IllegalArgumentException("Wrong Expression while code generation");
-                }
-
-            } else {
-                if (expression instanceof StoreExpr) {
                     Checker.getcodeArray().put(loc1++, new IInstructions.InputInt(((StoreExpr) expression).identifier.getName()));
-                } else {
-                    throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
+            }else {
+                throw new IllegalArgumentException("Wrong Expression while code generation");
             }
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
@@ -1039,6 +1035,7 @@ public class AbstractTree {
     public static class OutputCmd extends Cmd {
 
         public final Expression expression;
+        public Tokens.TypeToken.Type type;
 
         public OutputCmd(Expression expression, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
@@ -1066,19 +1063,14 @@ public class AbstractTree {
 
             loc1 = expression.generateCode(loc, routine);
             Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
-            if (type.getValue() == TypeAttribute.BOOL) {
-                if (expression instanceof StoreExpr) {
+            if (expression instanceof StoreExpr) {
+                if (type == Tokens.TypeToken.Type.BOOL) {
                     Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((StoreExpr) expression).identifier.getName()));
                 } else {
-                    throw new IllegalArgumentException("Wrong Expression while code generation");
-                }
-
-            } else {
-                if (expression instanceof StoreExpr) {
                     Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((StoreExpr) expression).identifier.getName()));
-                } else {
-                    throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
+            }else {
+                throw new IllegalArgumentException("Wrong Expression while code generation");
             }
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
