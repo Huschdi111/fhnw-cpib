@@ -1379,13 +1379,13 @@ public class AbstractTree {
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            Store store = (Store) Checker.getScope().getStoreTable().getStore(getIdendation());
+            Store store = (Store) Checker.getScope().getStoreTable().getStore(identifier.getName());
             int loc1 = loc;
             if (routine) {
                 if (Checker.getprocIdentTable().containsKey(identifier.getName())) {
                     //Compiler.getcodeArray().put(loc, new LoadAddrRel(Integer.parseInt(Compiler.getprocIdentTable().get(ident.getValue())[0])));
                     if(store==null){
-                        Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(ident.getValue())[0])));
+                        Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
                         return loc1;
                     }else{
                         loc1 = store.codeRef(loc, true, false, routine);
@@ -1408,7 +1408,7 @@ public class AbstractTree {
             }
         }
         public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
-            Store store = (Store) Checker.getScope().getStoreTable().getStore(identifier.getName());
+            Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);
         }
     }
@@ -1432,19 +1432,13 @@ public class AbstractTree {
         public ExpressionInfo checkCode(Checker checker) throws CheckerException {
             return routinecall.checkCode(checker);
         }
-        //TODO Implement
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            routinecall.generateCode(methodspecbuilder);
-        }
-
-
 
         @Override
-        int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError { // TODO
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError { // TODO
             int loc1 = loc;
             Checker.getcodeArray().put(loc1++, new IInstructions.AllocBlock(1)); //referenz neu spechern?
-            loc1 = routineCall.getExprList().code(loc1, routine);
-            Checker.getRoutineTable().getRoutine(routineCall.getIdent().getValue()).addCall(loc1++);
+            loc1 = routinecall.expressionlist.generateCode(loc1, routine);
+            Checker.getRoutineTable().lookup(routinecall.identifier.getName()).addCall(loc1++);
             return loc1;
         }
     }
@@ -1800,11 +1794,12 @@ public class AbstractTree {
         }
         //TODO Implement
         public int generateCode(int loc, boolean procedure) {
-            methodspecbuilder.addCode(identifier.getName() + "(");
+            /*methodspecbuilder.addCode(identifier.getName() + "(");
             if (expressionlist != null) {
                 expressionlist.generateCode(methodspecbuilder);
             }
-            methodspecbuilder.addCode(");" + System.lineSeparator());
+            methodspecbuilder.addCode(");" + System.lineSeparator());*/
+            return -1;
         }
     }
 
