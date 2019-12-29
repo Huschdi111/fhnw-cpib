@@ -2,6 +2,7 @@ package ch.fhnw.cpib.platform;
 
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
+import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.parser.Parser;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
@@ -51,20 +52,12 @@ public class Compiler {
             // Check the abstract tree
             System.out.println("===== Check abstract tree =====");
             abstractprogram.checkCode();
-            System.out.println("Done");
-            System.out.println();
+            System.out.println("Done\n\n");
 
-            /*// Generate the Java code
-            System.out.println("===== Generate Java code =====");
-            String javacode = generator.generateJavaCode(abstractprogram);
-            System.out.println(javacode);
-            System.out.println();
-
-            // Generate the Java JAR file
-            System.out.println("===== Generate Java JAR file =====");
-            File jarfile = generator.generateJarFile(javacode, abstractprogram);
-            System.out.println("Done: " + jarfile.getAbsolutePath());
-            System.out.println();
+            //Generate Code for javaVM
+            System.out.println("===== Generate Code for IML VM =====");
+            abstractprogram.generateCode(0);
+            System.out.println("Done\n\n");
 
             // Execute the Java JAR file
             /*System.out.println("===== Execute Java JAR file =====");
@@ -84,10 +77,10 @@ public class Compiler {
         } catch (CheckerException exception) {
             System.out.println("During the checking process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        } /*catch (GeneratorException exception) {
+        } catch (ICodeArray.CodeTooSmallError exception) {
             System.out.println("During the generation process, an error occurred: " + exception.getMessage());
             System.exit(1);
-        }*/
+        }
     }
 
     public static void main(String[] args) {
