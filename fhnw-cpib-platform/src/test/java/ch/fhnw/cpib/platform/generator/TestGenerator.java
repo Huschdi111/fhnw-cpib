@@ -42,7 +42,7 @@ public class TestGenerator {
             //System.out.println(abstractprogram);
 
             // Check the abstract tree
-            abstractprogram.checkCode(new Checker());
+            abstractprogram.checkCode();
 
             // Generate the Java code
             String javacode = generator.generateJavaCode(abstractprogram);

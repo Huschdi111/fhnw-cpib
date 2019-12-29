@@ -2,8 +2,6 @@ package ch.fhnw.cpib.platform;
 
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
-import ch.fhnw.cpib.platform.generator.Generator;
-import ch.fhnw.cpib.platform.generator.GeneratorException;
 import ch.fhnw.cpib.platform.parser.Parser;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
@@ -20,12 +18,9 @@ public class Compiler {
 
     private final Parser parser;
 
-    private final Generator generator;
-
     public Compiler() {
         this.scanner = new Scanner();
         this.parser = new Parser();
-        this.generator = new Generator();
     }
 
     public void compileString(String content) {
@@ -55,7 +50,7 @@ public class Compiler {
 
             // Check the abstract tree
             System.out.println("===== Check abstract tree =====");
-            abstractprogram.checkCode(new Checker());
+            abstractprogram.checkCode();
             System.out.println("Done");
             System.out.println();
 

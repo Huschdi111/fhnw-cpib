@@ -49,7 +49,7 @@ public class ParserTest {
         AbstractTree.Program absProg =  prog.toAbstract();
         System.out.println(absProg.toString());
         try{
-            absProg.checkCode(new Checker());
+            absProg.checkCode();
         }catch(Exception e){
             System.out.println("TypeChecker is angry");
             e.printStackTrace();

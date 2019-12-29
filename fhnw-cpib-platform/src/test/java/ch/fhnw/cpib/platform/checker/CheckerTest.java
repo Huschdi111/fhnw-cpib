@@ -40,7 +40,7 @@ public class CheckerTest {
 
             // Check the tree
             //try {
-                abstractprogram.checkCode(new Checker());
+                abstractprogram.checkCode();
             //} catch (Exception e) {
             //    System.out.println(filename);
             //}

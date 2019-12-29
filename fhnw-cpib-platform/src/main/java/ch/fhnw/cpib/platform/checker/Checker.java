@@ -19,7 +19,7 @@ public class Checker {
     private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
     //Ergebnis Array der Code-Generierung enthält alle Instructions zum ausführen
     private static CodeArray codeArray = new CodeArray(STORE_SIZE);
-    private SwitchTable globalSwitchTable = new SwitchTable();
+    private static SwitchTable globalSwitchTable = new SwitchTable();
     //
     private static int stackAddressHelper = 0; //TODO what is this?
     //private static DeclarationProcedure declaration; //TODO what is this?
@@ -48,15 +48,11 @@ public class Checker {
         return identTable;
     }
 
-    public static StoreTable getGlobalStoreTable() {
-        return globalStoreTable;
-    }
+    public static StoreTable getGlobalStoreTable() { return globalStoreTable; }
 
-    public static RoutineTable getRoutineTable() {
-        return routineTable;
-    }
+    public static RoutineTable getRoutineTable() { return routineTable; }
 
-    public SwitchTable getGlobalSwitchTable() { return globalSwitchTable; }
+    public static SwitchTable getGlobalSwitchTable() { return globalSwitchTable; }
 
     public static Scope getScope() {
         return scope;

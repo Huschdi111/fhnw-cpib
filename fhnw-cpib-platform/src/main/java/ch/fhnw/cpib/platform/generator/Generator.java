@@ -1,5 +1,6 @@
 package ch.fhnw.cpib.platform.generator;
 
+import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.utils.ReaderUtils;
 import com.squareup.javapoet.JavaFile;
@@ -18,14 +19,14 @@ import java.util.jar.Manifest;
 
 public class Generator {
 
-    public String generateJavaCode(AbstractTree.Program program) throws GeneratorException {
+    public String generateJavaCode(AbstractTree.Program program) throws GeneratorException, ICodeArray.CodeTooSmallError {
         // Build the Java file
-        JavaFile javafile = program.generateCode();
+        int i =  program.generateCode(1);
 
         // Replace the package namespace
-        String javacode = javafile.toString();
-        javacode = javacode.replace("package fhnw;", "");
-        return javacode;
+        //String javacode = javafile.toString();
+       // javacode = javacode.replace("package fhnw;", "");
+        return "";
     }
 
     public File generateJarFile(String javacode, AbstractTree.Program program) throws GeneratorException {
