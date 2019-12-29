@@ -363,13 +363,13 @@ public class AbstractTree {
 
         public final Declaration storedeclaration;
 
-        public final StoreExpr.GlobalImport globalimport;
+        public final GlobalImport globalimport;
 
         public final Declaration declaration;
 
         public final Cmd cmd;
 
-        public FunDecl(Tokens.IdentifierToken identifier, Param param, Declaration storedeclaration, StoreExpr.GlobalImport globalimport, Declaration declaration, Cmd cmd, Declaration nextdeclaration, int idendation) {
+        public FunDecl(Tokens.IdentifierToken identifier, Param param, Declaration storedeclaration, GlobalImport globalimport, Declaration declaration, Cmd cmd, Declaration nextdeclaration, int idendation) {
             super(nextdeclaration, idendation);
             this.identifier = identifier;
             this.param = param;
@@ -452,13 +452,13 @@ public class AbstractTree {
 
         public final Param param;
 
-        public final StoreExpr.GlobalImport globalimport;
+        public final GlobalImport globalimport;
 
         public final Declaration declaration;
 
         public final Cmd cmd;
 
-        public ProcDecl(Tokens.IdentifierToken identifier, Param param, StoreExpr.GlobalImport globalimport, Declaration declaration, Declaration nextdeclaration, Cmd cmd, int idendation) {
+        public ProcDecl(Tokens.IdentifierToken identifier, Param param, GlobalImport globalimport, Declaration declaration, Declaration nextdeclaration, Cmd cmd, int idendation) {
             super(nextdeclaration, idendation);
             this.identifier = identifier;
             this.param = param;
@@ -577,7 +577,7 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return (nextcmd != null ? nextcmd.checkCode(loc, routine) : loc);
+            return (nextcmd != null ? nextcmd.generateCode(loc, routine) : loc);
         }
     }
 
@@ -585,13 +585,13 @@ public class AbstractTree {
 
         public final Expression expression1;
 
-        public final StoreExpr.ExpressionList expressionlist1;
+        public final ExpressionList expressionlist1;
 
         public final Expression expression2;
 
-        public final StoreExpr.ExpressionList expressionlist2;
+        public final ExpressionList expressionlist2;
 
-        public AssiCmd(Expression expression1, StoreExpr.ExpressionList expressionlist1, Expression expression2, StoreExpr.ExpressionList expressionlist2, Cmd nextcmd, int idendation) {
+        public AssiCmd(Expression expression1, ExpressionList expressionlist1, Expression expression2, ExpressionList expressionlist2, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.expression1 = expression1;
             this.expressionlist1 = expressionlist1;
@@ -645,30 +645,23 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
-        }
-
-        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-
-            if (expression2 instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression2).getOperator().getValue() == OperatorAttribute.DOT) {
+            /*if (expression2 instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression2).getOperator().getValue() == OperatorAttribute.DOT) {
                 expression2 = (StoreExpr) ((StoreExpr.DyadicExpr) expression2).getExpr1();
             }
 
             if (expression1 instanceof StoreExpr.DyadicExpr
-                && ((StoreExpr.DyadicExpr) expression1).getOperator().getValue() == OperatorAttribute.DOT) {
+                && ((StoreExpr.DyadicExpr) expression1).operation.getOperation().name() == Tokens.OperationToken.DOT) {
                 expression1 = (StoreExpr) ((StoreExpr.DyadicExpr) expression1).getExpr1();
-            }
+            }*/
 
             loc1 = expression1.generateCode(loc, routine);
-
-            if (!(expression1 instanceof ExprStore)) {
+            if (!(expression1 instanceof StoreExpr)) {
                 loc1 = expression1.generateCode(loc1, routine);
                 Checker.getcodeArray().put(loc1++, new IInstructions.Store());
             } else {
-                loc1 = ((ExprStore) expression1).codeRef(loc1, true, true, routine);
-                // Compiler.getVM().Store(loc1++);
+                loc1 = ((StoreExpr) expression1).codeRef(loc1, true, true, routine);
                 Checker.getcodeArray().put(loc1++, new IInstructions.Store());
             }
             return (getNextCmd() != null ? getNextCmd().generateCode(loc1, routine) : loc1);
@@ -945,11 +938,6 @@ public class AbstractTree {
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             return 0;
         }
-
-        @Override//TODO implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-
-        }
     }
 
     public static class RepCondCmd extends Cmd {
@@ -1033,29 +1021,24 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
-        }
-
-        @Override
-        public int code(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = expression.generateCode(loc, routine);
             int loc2 = cmd.generateCode(loc1 + 1, routine);
             // Compiler.getVM().CondJump(loc1, loc2 + 1);
             // Compiler.getVM().UncondJump(loc2, loc);
             Checker.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
             Checker.getcodeArray().put(loc2, new IInstructions.UncondJump(loc));
-            return (nextcmd != null ? nextcmd.generateCode(loc2 + 1, routine) : (loc2 + 1);
+            return (nextcmd != null ? nextcmd.generateCode(loc2 + 1, routine) : (loc2 + 1));
         }
     }
 
     public static class ProcCallCmd extends Cmd {
 
-        public final StoreExpr.RoutineCall routinecall;
+        public final RoutineCall routinecall;
 
-        public final StoreExpr.GlobalInit globalinit;
+        public final GlobalInit globalinit;
 
-        public ProcCallCmd(StoreExpr.RoutineCall routinecall, StoreExpr.GlobalInit globalinit, Cmd nextcmd, int idendation) {
+        public ProcCallCmd(RoutineCall routinecall, GlobalInit globalinit, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.routinecall = routinecall;
             this.globalinit = globalinit;
@@ -1083,8 +1066,8 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = loc;
-            loc1 = routinecall.getExprList().code(loc1, routine);
-            Checker.getRoutineTable().getRoutine(routinecall.getIdendation().getValue()).addCall(loc1++);
+            loc1 = routinecall.expressionlist.generateCode(loc1, routine);
+            Checker.getRoutineTable().lookup(routinecall.identifier.getName()).addCall(loc1++);
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
     }
@@ -1116,20 +1099,20 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            if (expression instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression).getOperator().getValue() == OperatorAttribute.DOT) {
-                ExprStore expr1 = (ExprStore) ((StoreExpr.DyadicExpr) expression).getExpr1();
+            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperator().getValue() == OperatorAttribute.DOT) {
+                StoreExpr expr1 = (StoreExpr) ((DyadicExpr) expression).getExpr1();
                 expression = expr1;
-                loc1 = ((ExprStore) expression).codeRef(loc, true, false, routine); // TODO
+                loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
             } else if (expression instanceof ExprArray) {
                 loc1 = ((ExprArray) expression).codeRef(loc, routine);
             } else {
-                loc1 = ((ExprStore) expression).codeRef(loc, true, false, routine); // TODO
+                loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
             }
 
             if (type.getValue() == TypeAttribute.BOOL) {
                 // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
                 // expr).getIdent().getValue());
-                if (expression instanceof ExprStore) {
+                if (expression instanceof StoreExpr) {
                     CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprStore) expression).getIdent().getValue()));
                 } else if (expression instanceof ExprArray) {
                     CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprArray) expression).getIdent().getValue()));
@@ -1140,8 +1123,8 @@ public class AbstractTree {
             } else {
                 // Compiler.getVM().IntOutput(loc1++, ((ExprStore)
                 // expr).getIdent().getValue());
-                if (expression instanceof ExprStore) {
-                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((ExprStore) expression).getIdent().getValue()));
+                if (expression instanceof StoreExpr) {
+                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((StoreExpr) expression).getIdent().getValue()));
                 } else if (expression instanceof ExprArray) {
                     CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((ExprArray) expression).getIdent().getValue()));
                 } else {
@@ -1181,44 +1164,34 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            if (expression instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression).getOperation.getValue() == OperatorAttribute.DOT) {
-                ExprStore expr1 = (ExprStore) ((StoreExpr.DyadicExpr) expression).getExpr1();
-                ExprStore expr2 = (ExprStore) ((StoreExpr.DyadicExpr) expression).getExpr2();
+            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperation.getValue() == OperatorAttribute.DOT) {
+                StoreExpr expr1 = (StoreExpr) ((DyadicExpr) expression).getExpr1();
+                StoreExpr expr2 = (StoreExpr) ((DyadicExpr) expression).getExpr2();
                 Store store = (Store) Checker.getGlobalStoreTable()
                     .getStore(expr2.getIdent().getValue() + "." + expr1.getIdent().getValue());
                 expr1.setIdent(store.getType().getIdent());
                 expression = expr1;
                 loc1 = expression.generateCode(loc, routine);
-            } else if (expression instanceof ExprArray) {
-                loc1 = ((ExprArray) expression).code(loc, routine);
             } else {
-                loc1 = ((ExprStore) expression).code(loc, routine);
+                loc1 = ((StoreExpr) expression).generateCode(loc, routine);
                 Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
             }
 
             if (type.getValue() == TypeAttribute.BOOL) {
                 // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
                 // expr).getIdent().getValue());
-                if (expression instanceof ExprStore) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((ExprStore) expression).getIdent().getValue()));
-                } else if (expression instanceof ExprArray) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((ExprArray) expression).getIdent().getValue()));
+                if (expression instanceof StoreExpr) {
+                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((StoreExpr) expression).getIdent().getValue()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
 
             } else {
-                // Compiler.getVM().IntOutput(loc1++, ((ExprStore)
-                // expr).getIdent().getValue());
-                if (expression instanceof ExprStore) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((ExprStore) expression).getIdent().getValue()));
-                } else if (expression instanceof ExprArray) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((ExprArray) expression).getIdent().getValue()));
+                if (expression instanceof StoreExpr) {
+                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((StoreExpr) expression).getIdent().getValue()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
-                // Compiler.getcodeArray().put(loc1++, new
-                // OutputInt(((ExprStore) expr).getIdent().getValue()));
             }
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
@@ -1299,7 +1272,7 @@ public class AbstractTree {
 
         public abstract ExpressionInfo checkCode(Checker checker) throws CheckerException;
 
-        abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
+        public abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
     public static class LiteralExpr extends Expression {
@@ -1433,6 +1406,11 @@ public class AbstractTree {
                     return ((store != null) ? store.codeLoad(loc, routine) : loc);
                 }
             }
+        }
+        public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
+            Store store = (Store) Checker.getScope().getStoreTable().getStore(identifier.getName());
+            return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);
+        }
     }
 
     public static class FunCallExpr extends Expression {
@@ -1495,19 +1473,9 @@ public class AbstractTree {
         public ExpressionInfo checkCode(Checker checker) throws CheckerException {
             return expression.checkCode(checker);
         }
-        //TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            if (operation.getOperation() == Tokens.OperationToken.Operation.MINUS) {
-                methodscpecbuilder.addCode(" -");
-                expression.generateCode(methodscpecbuilder);
-            } else if (operation.getTerminal() == Terminal.NOT) {
-                // FIXME: Fix known errata
-                throw new RuntimeException("The generator just hit a known errata in the monadic expression");
-            }
-        }
 
         @Override
-        int generateCode(int loc, boolean routine) {
+        public int generateCode(int loc, boolean routine) {
             // TODO Auto-generated method stub
             return 0;
         }
@@ -1688,8 +1656,8 @@ public class AbstractTree {
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
 
-            if (expression1 instanceof ExprStore) {
-                loc1 = ((ExprStore) expression1).codeRef(loc, true, true, routine);
+            if (expression1 instanceof StoreExpr) {
+                loc1 = ((StoreExpr) expression1).codeRef(loc, true, true, routine);
             } else if (expression1 instanceof ExprFunCall) {
                 loc1 = ((ExprFunCall) expression1).code(loc, routine);
             } else {
@@ -1699,18 +1667,16 @@ public class AbstractTree {
 
             if (operation.getOperation() != OperatorAttribute.CAND && operator.getValue() != OperatorAttribute.COR) {
 
-                if (expression2 instanceof ExprStore) {
-                    loc1 = ((ExprStore) expression2).codeRef(loc1, true, true, routine);
-                } else if (expression2 instanceof ExprFunCall) {
+                if (expression2 instanceof StoreExpr) {
+                    loc1 = ((StoreExpr) expression2).codeRef(loc1, true, true, routine);
+                } else if (expression2 instanceof StoreExpr) {
                     loc1 = ((ExprFunCall) expression2).code(loc1, routine);
                 } else {
 
-                    loc1 = expression2.code(loc1, routine);
+                    loc1 = expression2.generateCode(loc1, routine);
                 }
 
                 switch (operation.getOperation()) {
-                    case DOT:
-                        break;
                     case PLUS:
                         // Compiler.getVM().IntAdd(loc1);
                         Checker.getcodeArray().put(loc1, new IInstructions.AddInt());
@@ -1833,7 +1799,7 @@ public class AbstractTree {
             return new ExpressionInfo(calledroutine.getIdentifier(), calledroutine.getReturnType());
         }
         //TODO Implement
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
+        public int generateCode(int loc, boolean procedure) {
             methodspecbuilder.addCode(identifier.getName() + "(");
             if (expressionlist != null) {
                 expressionlist.generateCode(methodspecbuilder);
@@ -1869,12 +1835,8 @@ public class AbstractTree {
             }
         }
         //TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            expression.generateCode(methodscpecbuilder);
-            if (expressionlist != null) {
-                methodscpecbuilder.addCode(", ");
-                expressionlist.generateCode(methodscpecbuilder);
-            }
+        public int generateCode(int loc, boolean procedure) {
+            return -1;
         }
     }
 
@@ -1948,5 +1910,4 @@ public class AbstractTree {
         }
     }
 }
-    }
-}
+
