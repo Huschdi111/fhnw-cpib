@@ -1,5 +1,4 @@
 package ch.fhnw.cpib.platform;
-
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
@@ -10,8 +9,6 @@ import ch.fhnw.cpib.platform.parser.exception.ParserException;
 import ch.fhnw.cpib.platform.scanner.Scanner;
 import ch.fhnw.cpib.platform.scanner.exception.ScannerException;
 import ch.fhnw.cpib.platform.scanner.tokens.TokenList;
-
-import java.io.File;
 
 public class Compiler {
 
@@ -59,15 +56,10 @@ public class Compiler {
             abstractprogram.generateCode(0);
             System.out.println("Done\n\n");
 
-            // Execute the Java JAR file
-            /*System.out.println("===== Execute Java JAR file =====");
-            Pair<String, String> output = generator.executeJarFile(jarfile);
-            System.out.println("Regular Output:");
-            System.out.println(output.getValue0());
-            System.out.println();
-            System.out.println("Error Output:");
-            System.out.println(output.getValue1());
-            System.out.println();*/
+            //Show Mashine Code
+            System.out.println("===== Generated VM Maschine Code =====");
+            System.out.println(Checker.getcodeArray());
+
         } catch (ScannerException exception) {
             System.out.println("During the scanning process, an error occurred: " + exception.getMessage());
             System.exit(1);
@@ -99,11 +91,7 @@ public class Compiler {
             + "global b:bool; x:int32\n"
             + " do \n"
             + " b init := 2;"
-            + " x init := 1;\n"
-            + " guardif\n "
-            + "    | x == 2 => x := x + 1\n"
-            + "    | x + 1 => x := 2\n"
-            + " endguardif \n"
+            + " x init := 1\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

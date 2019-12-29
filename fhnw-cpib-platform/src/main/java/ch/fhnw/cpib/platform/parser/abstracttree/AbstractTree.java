@@ -1251,11 +1251,10 @@ public class AbstractTree {
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            Store store = (Store) Checker.getScope().getStoreTable().getStore(identifier.getName());
+            Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             int loc1 = loc;
             if (routine) {
                 if (Checker.getprocIdentTable().containsKey(identifier.getName())) {
-                    //Compiler.getcodeArray().put(loc, new LoadAddrRel(Integer.parseInt(Compiler.getprocIdentTable().get(ident.getValue())[0])));
                     if(store==null){
                         Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
                         return loc1;
