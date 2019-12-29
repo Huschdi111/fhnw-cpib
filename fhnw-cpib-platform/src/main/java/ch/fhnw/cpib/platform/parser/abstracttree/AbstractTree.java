@@ -303,56 +303,6 @@ public class AbstractTree {
         public String getIdent() {
            return typedident.getIdentifier().getName();
         }
-
-        /*@Override
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            TypedIdentType typedidenttype = (TypedIdentType) typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    methodspecbuilder.addStatement("boolean " + typedidenttype.getParameterName() + " = false");
-                    break;
-                case INT:
-                    methodspecbuilder.addStatement("int " + typedidenttype.getParameterName() + " = 0");
-                    break;
-                case INT64:
-                default:
-                    methodspecbuilder.addStatement("long " + typedidenttype.getParameterName() + " = 0L");
-                    break;
-            }
-
-            if (getNextDeclaration() != null) {
-                getNextDeclaration().generateCode(methodspecbuilder);
-            }
-        }*/
-
-        /*@Override
-        public void generateCode(TypeSpec.Builder typespecbuilder) {
-            TypedIdentType typedidenttype = (TypedIdentType) typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    FieldSpec.Builder fieldspecbuilder1 = FieldSpec.builder(boolean.class, typedidenttype.getParameterName());
-                    fieldspecbuilder1.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder1.initializer("false");
-                    typespecbuilder.addField(fieldspecbuilder1.build());
-                    break;
-                case INT:
-                    FieldSpec.Builder fieldspecbuilder2 = FieldSpec.builder(int.class, typedidenttype.getParameterName());
-                    fieldspecbuilder2.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder2.initializer("0");
-                    typespecbuilder.addField(fieldspecbuilder2.build());
-                    break;
-                case INT64:
-                default:
-                    FieldSpec.Builder fieldspecbuilder3 = FieldSpec.builder(long.class, typedidenttype.getParameterName());
-                    fieldspecbuilder3.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-                    fieldspecbuilder3.initializer("0L");
-                    typespecbuilder.addField(fieldspecbuilder3.build());
-                    break;
-            }
-            if (getNextDeclaration() != null) {
-                getNextDeclaration().generateCode(typespecbuilder);
-            }
-        }*/
     }
 
     public static class FunDecl extends Declaration {
@@ -647,15 +597,6 @@ public class AbstractTree {
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            /*if (expression2 instanceof StoreExpr.DyadicExpr && ((StoreExpr.DyadicExpr) expression2).getOperator().getValue() == OperatorAttribute.DOT) {
-                expression2 = (StoreExpr) ((StoreExpr.DyadicExpr) expression2).getExpr1();
-            }
-
-            if (expression1 instanceof StoreExpr.DyadicExpr
-                && ((StoreExpr.DyadicExpr) expression1).operation.getOperation().name() == Tokens.OperationToken.DOT) {
-                expression1 = (StoreExpr) ((StoreExpr.DyadicExpr) expression1).getExpr1();
-            }*/
-
             loc1 = expression1.generateCode(loc, routine);
             if (!(expression1 instanceof StoreExpr)) {
                 loc1 = expression1.generateCode(loc1, routine);
@@ -707,33 +648,10 @@ public class AbstractTree {
             }
         }
 
-
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
+            return -1;
         }
-
-        /*@Override//TODO implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            methodscpecbuilder.addCode("switch(");
-            expression.generateCode(methodscpecbuilder);
-            methodscpecbuilder.addCode(") {" + System.lineSeparator());
-
-            repcasecmd.generateCode(methodscpecbuilder);
-
-            if (cmd != null) {
-                methodscpecbuilder.beginControlFlow("default: ");
-                cmd.generateCode(methodscpecbuilder);
-                methodscpecbuilder.addStatement("break");
-                methodscpecbuilder.endControlFlow();
-            }
-
-            methodscpecbuilder.addCode("}" + System.lineSeparator());
-
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodscpecbuilder);
-            }
-        }*/
     }
 
     public static class RepCaseCmd extends Cmd {
@@ -1099,39 +1017,20 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperator().getValue() == OperatorAttribute.DOT) {
-                StoreExpr expr1 = (StoreExpr) ((DyadicExpr) expression).getExpr1();
-                expression = expr1;
-                loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
-            } else if (expression instanceof ExprArray) {
-                loc1 = ((ExprArray) expression).codeRef(loc, routine);
-            } else {
-                loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
-            }
-
-            if (type.getValue() == TypeAttribute.BOOL) {
-                // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
-                // expr).getIdent().getValue());
+            loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
+            if (type.getValue == TypeAttribute.BOOL) {
                 if (expression instanceof StoreExpr) {
-                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprStore) expression).getIdent().getValue()));
-                } else if (expression instanceof ExprArray) {
-                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputBool(((ExprArray) expression).getIdent().getValue()));
+                    Checker.getcodeArray().put(loc1++, new IInstructions.InputBool(((StoreExpr) expression).identifier.getName()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
 
             } else {
-                // Compiler.getVM().IntOutput(loc1++, ((ExprStore)
-                // expr).getIdent().getValue());
                 if (expression instanceof StoreExpr) {
-                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((StoreExpr) expression).getIdent().getValue()));
-                } else if (expression instanceof ExprArray) {
-                    CompilerException.getcodeArray().put(loc1++, new IInstructions.InputInt(((ExprArray) expression).getIdent().getValue()));
+                    Checker.getcodeArray().put(loc1++, new IInstructions.InputInt(((StoreExpr) expression).identifier.getName()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
-                // Compiler.getcodeArray().put(loc1++, new
-                // OutputInt(((ExprStore) expr).getIdent().getValue()));
             }
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
@@ -1164,31 +1063,19 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-            if (expression instanceof DyadicExpr && ((DyadicExpr) expression).getOperation.getValue() == OperatorAttribute.DOT) {
-                StoreExpr expr1 = (StoreExpr) ((DyadicExpr) expression).getExpr1();
-                StoreExpr expr2 = (StoreExpr) ((DyadicExpr) expression).getExpr2();
-                Store store = (Store) Checker.getGlobalStoreTable()
-                    .getStore(expr2.getIdent().getValue() + "." + expr1.getIdent().getValue());
-                expr1.setIdent(store.getType().getIdent());
-                expression = expr1;
-                loc1 = expression.generateCode(loc, routine);
-            } else {
-                loc1 = ((StoreExpr) expression).generateCode(loc, routine);
-                Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
-            }
 
+            loc1 = expression.generateCode(loc, routine);
+            Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
             if (type.getValue() == TypeAttribute.BOOL) {
-                // Compiler.getVM().BoolOutput(loc1++, ((ExprStore)
-                // expr).getIdent().getValue());
                 if (expression instanceof StoreExpr) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((StoreExpr) expression).getIdent().getValue()));
+                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputBool(((StoreExpr) expression).identifier.getName()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
 
             } else {
                 if (expression instanceof StoreExpr) {
-                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((StoreExpr) expression).getIdent().getValue()));
+                    Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((StoreExpr) expression).identifier.getName()));
                 } else {
                     throw new IllegalArgumentException("Wrong Expression while code generation");
                 }
@@ -1575,96 +1462,24 @@ public class AbstractTree {
             return new ExpressionInfo(exprinfo1.getName(), exprinfo1.getType());
         }
 
-        public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
-
-            int loc1 = expression1.generateCode(loc);
-            int loc2;
-            switch (operation.getOperation()) {
-                case PLUS:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.AddInt());
-                    return loc2++;
-                case MINUS:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.SubInt());
-                    return loc2++;
-                case AND://TODO FIX
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.AddInt());
-                    return loc2++;
-                case OR: //TODO FIX
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.AddInt());
-                    return loc2++;
-                case CAND: //TODO FIX
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.AddInt());
-                    return loc2++;
-                case COR: //TODO FIX
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.AddInt());
-                    return loc2++;
-                case TIMES:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.MultInt());
-                    return loc2++;
-                case DIVE:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.DivTruncInt());
-                    return loc2++;
-                case MODE://TODO ????
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.ModTruncInt());
-                    return loc2++;
-                case EQ:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.EqInt());
-                    return loc2++;
-                case NE:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.NeInt());
-                    return loc2++;
-                case LT:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.LtInt());
-                    return loc2++;
-                case GT:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.GtInt());
-                    return loc2++;
-                case LE:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.LeInt());
-                    return loc2++;
-                case GE:
-                    loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.GeInt());
-                    return loc2++;
-                default:
-                    throw new RuntimeException("Invalid operation found!");
-
-            }
-        }
-
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-
             if (expression1 instanceof StoreExpr) {
                 loc1 = ((StoreExpr) expression1).codeRef(loc, true, true, routine);
-            } else if (expression1 instanceof ExprFunCall) {
-                loc1 = ((ExprFunCall) expression1).code(loc, routine);
+            } else if (expression1 instanceof FunCallExpr) {
+                loc1 = ((FunCallExpr) expression1).generateCode(loc, routine);
             } else {
-
-                loc1 = expression1.code(loc, routine);
+                loc1 = expression1.generateCode(loc, routine);
             }
 
-            if (operation.getOperation() != OperatorAttribute.CAND && operator.getValue() != OperatorAttribute.COR) {
+            if (operation.getOperation() != Tokens.OperationToken.Operation.CAND
+                && operation.getOperation() != Tokens.OperationToken.Operation.COR) {
 
                 if (expression2 instanceof StoreExpr) {
                     loc1 = ((StoreExpr) expression2).codeRef(loc1, true, true, routine);
                 } else if (expression2 instanceof StoreExpr) {
-                    loc1 = ((ExprFunCall) expression2).code(loc1, routine);
+                    loc1 = ((FunCallExpr) expression2).generateCode(loc1, routine);
                 } else {
 
                     loc1 = expression2.generateCode(loc1, routine);
@@ -1742,7 +1557,6 @@ public class AbstractTree {
                 return loc2;
             }
         }
-
     }
 
     public static class RoutineCall extends AbstractNode {
