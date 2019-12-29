@@ -241,6 +241,8 @@ public class AbstractTree {
         public abstract Tokens.TypeToken.Type checkCode(Checker checker) throws CheckerException;
 
         public abstract int generateCode(int loc) throws ICodeArray.CodeTooSmallError;
+
+        public abstract String getIdent();
     }
 
     public static class StoDecl extends Declaration {
@@ -295,6 +297,11 @@ public class AbstractTree {
         @Override
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
             return 0;
+        }
+
+        @Override
+        public String getIdent() {
+           return typedident.getIdentifier().getName();
         }
 
         /*@Override
@@ -427,11 +434,16 @@ public class AbstractTree {
                     }
                     i += 1;
                 }
-                Checker.getprocIdentTable().put(storedeclaration..getIdent().getValue(), new String[] {(0- routine.getParameters().size() - 1) +"","REF"});
+                Checker.getprocIdentTable().put(storedeclaration.getIdent(), new String[] {(0- routine.getParameters().size() - 1) +"","REF"});
                 loc1 = cmd.generateCode(loc1, true);
                 Checker.getcodeArray().put(loc1, new IInstructions.Return(1));
                 return ++loc1;
             }
+
+        @Override
+        public String getIdent() {
+            return identifier.getName();
+        }
     }
 
     public static class ProcDecl extends Declaration {
@@ -495,6 +507,11 @@ public class AbstractTree {
         @Override
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
             return 0;
+        }
+
+        @Override
+        public String getIdent() {
+            return identifier.getName();
         }
 
         /*@Override
@@ -1635,7 +1652,7 @@ public class AbstractTree {
                     return loc2++;
                 case MODE://TODO ????
                     loc2 = expression2.generateCode(loc1);
-                    Checker.getcodeArray().put(loc2, new IInstructions.Mode());
+                    Checker.getcodeArray().put(loc2, new IInstructions.ModTruncInt());
                     return loc2++;
                 case EQ:
                     loc2 = expression2.generateCode(loc1);
