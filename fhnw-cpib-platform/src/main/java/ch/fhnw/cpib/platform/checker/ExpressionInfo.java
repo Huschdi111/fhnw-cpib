@@ -8,6 +8,16 @@ public class ExpressionInfo {
 
     private Tokens.TypeToken.Type type;
 
+    public Tokens.MechModeToken.MechMode getMechMode() {
+        return mechMode;
+    }
+
+    public void setMechMode(Tokens.MechModeToken.MechMode mechMode) {
+        this.mechMode = mechMode;
+    }
+
+    private Tokens.MechModeToken.MechMode mechMode;
+
     public ExpressionInfo(String name, Tokens.TypeToken.Type type) {
         this.name = name;
         this.type = type;

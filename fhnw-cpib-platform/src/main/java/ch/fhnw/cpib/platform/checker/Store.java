@@ -93,4 +93,12 @@ public class Store extends Symbol {
         return loc1;
     }
 
+    public Store clone() {
+        Store store = new Store(getIdentifier(), this.getType(), this.isConst);
+        store.address = this.address;
+        store.initialized = this.initialized;
+        store.writeable = this.writeable;
+        return store;
+    }
+
 }

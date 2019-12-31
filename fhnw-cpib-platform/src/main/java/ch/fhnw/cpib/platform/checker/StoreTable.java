@@ -3,6 +3,7 @@ package ch.fhnw.cpib.platform.checker;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class StoreTable {
@@ -36,6 +37,16 @@ public class StoreTable {
 
     public Map<String, Store> getTable() {
         return storeMap;
+    }
+
+    public StoreTable clone() {
+        StoreTable newTable = new StoreTable();
+        Set<String> keys = storeMap.keySet();
+        for (String key : keys) {
+            Store store = (Store)storeMap.get(key);
+            newTable.addStore(store.clone());
+        }
+        return newTable;
     }
 
 }

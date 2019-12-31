@@ -24,29 +24,17 @@ public class Checker {
     private static int stackAddressHelper = 0; //TODO what is this?
     //private static DeclarationProcedure declaration; //TODO what is this?
 
-
     private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
-    //private static CodeArray tempcodeArray = new CodeArray(STORE_SIZE);
 
-    public static IVirtualMachine getVM() {
-        return vm;
-    }
+    public static IVirtualMachine getVM() { return vm; }
 
-    public static HashMap<String, String[]> getprocIdentTable() {
-        return procidentTable;
-    }
+    public static HashMap<String, String[]> getprocIdentTable() { return procidentTable; }
 
-    public static void addprocIdentTable(String ident, String[] posMech) {
-        procidentTable.put(ident, posMech);
-    }
+    public static void addprocIdentTable(String ident, String[] posMech) { procidentTable.put(ident, posMech); }
 
-    public static void addIdentTable(String name, int i) {
-        identTable.put(name, new Integer(i));
-    }
+    public static void addIdentTable(String name, int i) { identTable.put(name, new Integer(i)); }
 
-    public static HashMap<String, Integer> getIdentTable() {
-        return identTable;
-    }
+    public static HashMap<String, Integer> getIdentTable() { return identTable; }
 
     public static StoreTable getGlobalStoreTable() { return globalStoreTable; }
 
@@ -54,30 +42,15 @@ public class Checker {
 
     public static SwitchTable getGlobalSwitchTable() { return globalSwitchTable; }
 
-    public static Scope getScope() {
-        return scope;
-    }
+    public static Scope getScope() { return scope; }
 
-    public static int getstackAddressHelper() {
-        return stackAddressHelper;
-    }
+    public static int getstackAddressHelper() { return stackAddressHelper; }
 
-    public static void setstackAddressHelper(int offset) {
-        stackAddressHelper = stackAddressHelper + offset;
-    }
+    public static void setstackAddressHelper(int offset) { stackAddressHelper = stackAddressHelper + offset; }
 
+    public static ICodeArray getcodeArray() { return codeArray; }
 
-    public static ICodeArray getcodeArray() {
-        return codeArray;
-    }
-
-    //public static ICodeArray gettempcodeArray() {
-    //    return tempcodeArray;
-    //}
-
-    public static void setScope(final Scope scope) {
-        Checker.scope = scope;
-    }
+    public static void setScope(final Scope scope) { Checker.scope = scope; }
 
     private Checker() {
         throw new AssertionError("Instantiating utility class...");

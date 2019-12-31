@@ -1,7 +1,10 @@
 package ch.fhnw.cpib.platform;
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
+import ch.fhnw.cpib.platform.javavm.CodeArray;
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
+import ch.fhnw.cpib.platform.javavm.IVirtualMachine;
+import ch.fhnw.cpib.platform.javavm.VirtualMachine;
 import ch.fhnw.cpib.platform.parser.Parser;
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
@@ -13,7 +16,6 @@ import ch.fhnw.cpib.platform.scanner.tokens.TokenList;
 public class Compiler {
 
     private final Scanner scanner;
-
     private final Parser parser;
 
     public Compiler() {
@@ -59,6 +61,12 @@ public class Compiler {
             //Show Mashine Code
             System.out.println("===== Generated VM Maschine Code =====");
             System.out.println(Checker.getcodeArray());
+            System.out.println("Done\n\n");
+
+            //Execute the code array
+            System.out.println("===== Execute VM =====");
+            ICodeArray codeArray = Checker.getcodeArray();
+            new VirtualMachine(codeArray, codeArray.getSize());
 
         } catch (ScannerException exception) {
             System.out.println("During the scanning process, an error occurred: " + exception.getMessage());
@@ -71,6 +79,9 @@ public class Compiler {
             System.exit(1);
         } catch (ICodeArray.CodeTooSmallError exception) {
             System.out.println("During the generation process, an error occurred: " + exception.getMessage());
+            System.exit(1);
+        } catch (IVirtualMachine.ExecutionError exception) {
+            System.out.println("During the execution of the vm an error occurred: " + exception.getMessage());
             System.exit(1);
         }
     }
@@ -87,11 +98,10 @@ public class Compiler {
             + " else x := x + 2\n"
             + " endif \n"
             + "endprogram \n";*/
-        String content = "program Assoc()\n"
+        String content = "program Assoc(in const m:int32)\n"
             + "global b:bool; x:int32\n"
-            + " do \n"
-            + " b init := 2;"
-            + " x init := 1\n"
+            + "do \n"
+            + "x init := 2\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

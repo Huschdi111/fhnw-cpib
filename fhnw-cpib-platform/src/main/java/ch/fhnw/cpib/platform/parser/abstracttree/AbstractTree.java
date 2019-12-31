@@ -48,6 +48,8 @@ public class AbstractTree {
             if (cmd != null) {
                 cmd.checkCode();
             }
+            Checker.setScope(new Scope(Checker.getGlobalStoreTable().clone()));
+            cmd.checkCode();
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
@@ -115,26 +117,9 @@ public class AbstractTree {
             }
         }
 
-        /*public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            typedident.generateCode(methodscpecbuilder);
-            TypedIdentType typedidenttype = (TypedIdentType) typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    methodscpecbuilder.addCode(" = false;" + System.lineSeparator());
-                    break;
-                case INT:
-                    methodscpecbuilder.addCode(" = 0;" + System.lineSeparator());
-                    break;
-                case INT64:
-                default:
-                    methodscpecbuilder.addCode(" = 0L;" + System.lineSeparator());
-                    break;
-            }
-
-            if (nextprogparam != null) {
-                nextprogparam.generateCode(methodscpecbuilder);
-            }
-        }*/
+        public int generateCode(int loc, boolean procedure) {
+            return -1;
+        }
     }
 
     public static class Param extends AbstractNode {
@@ -202,24 +187,11 @@ public class AbstractTree {
             }
         }
 
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            TypedIdentType typedidenttype = (TypedIdentType) typedident;
-            switch (typedidenttype.getParameterType()) {
-                case BOOL:
-                    methodscpecbuilder.addParameter(boolean.class, typedidenttype.getParameterName());
-                    break;
-                case INT:
-                    methodscpecbuilder.addParameter(int.class, typedidenttype.getParameterName());
-                    break;
-                case INT64:
-                default:
-                    methodscpecbuilder.addParameter(long.class, typedidenttype.getParameterName());
-                    break;
-            }
-
+        public int generateCode(int loc, boolean procedure) {
             if (nextparam != null) {
-                nextparam.generateCode(methodscpecbuilder);
+                nextparam.generateCode(loc, procedure);
             }
+            return -1;
         }
     }
 
@@ -243,10 +215,11 @@ public class AbstractTree {
         public abstract String getIdent();
     }
 
+    /*Defines the Decleration of a variable*/
     public static class StoDecl extends Declaration {
-
+        //var, const modifier
         public final Tokens.ChangeModeToken changemode;
-
+        //type info
         public final TypedIdent typedident;
 
         public StoDecl(Tokens.ChangeModeToken changemode, TypedIdent typedident, Declaration nextdeclaration, int idendation) {
@@ -369,24 +342,24 @@ public class AbstractTree {
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
-                int loc1 = loc;
-                Routine routine = Checker.getRoutineTable().lookup(identifier.getName());
-                Checker.setScope(routine.getScope());
-                routine.setAddress(loc1);
-                int i = 0 - routine.getParameters().size();
-                for (Parameter p : routine.getParameters()){
-                    if (p.getMechMode() == Tokens.MechModeToken.MechMode.COPY){
-                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"",p.getMechMode().name()});
-                    }else{
-                        Checker.getprocIdentTable().put(p.getName(), new String[] {i+"","REF"});
-                    }
-                    i += 1;
+            int loc1 = loc;
+            Routine routine = Checker.getRoutineTable().lookup(identifier.getName());
+            Checker.setScope(routine.getScope());
+            routine.setAddress(loc1);
+            int i = 0 - routine.getParameters().size();
+            for (Parameter p : routine.getParameters()){
+                if (p.getMechMode() == Tokens.MechModeToken.MechMode.COPY){
+                    Checker.getprocIdentTable().put(p.getName(), new String[] {i+"",p.getMechMode().name()});
+                }else{
+                    Checker.getprocIdentTable().put(p.getName(), new String[] {i+"","REF"});
                 }
-                Checker.getprocIdentTable().put(storedeclaration.getIdent(), new String[] {(0- routine.getParameters().size() - 1) +"","REF"});
-                loc1 = cmd.generateCode(loc1, true);
-                Checker.getcodeArray().put(loc1, new IInstructions.Return(1));
-                return ++loc1;
+                i += 1;
             }
+            Checker.getprocIdentTable().put(storedeclaration.getIdent(), new String[] {(0- routine.getParameters().size() - 1) +"","REF"});
+            loc1 = cmd.generateCode(loc1, true);
+            Checker.getcodeArray().put(loc1, new IInstructions.Return(1));
+            return ++loc1;
+        }
 
         @Override
         public String getIdent() {
@@ -394,16 +367,20 @@ public class AbstractTree {
         }
     }
 
+    /*Procedure Decleration*/
     public static class ProcDecl extends Declaration {
 
+        //Name of the procedure
         public final Tokens.IdentifierToken identifier;
 
+        //Parameter List
         public final Param param;
 
         public final GlobalImport globalimport;
 
         public final Declaration declaration;
 
+        //First Cmd of this procedure
         public final Cmd cmd;
 
         public ProcDecl(Tokens.IdentifierToken identifier, Param param, GlobalImport globalimport, Declaration declaration, Declaration nextdeclaration, Cmd cmd, int idendation) {
@@ -454,35 +431,13 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
-            return 0;
+            return -1;
         }
 
         @Override
         public String getIdent() {
             return identifier.getName();
         }
-
-        /*@Override
-        public void generateCode(TypeSpec.Builder typescpecbuilder) {
-            MethodSpec.Builder methodspecbuilder = MethodSpec.methodBuilder(identifier.getName());
-            methodspecbuilder.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-
-            if (param != null) {
-                param.generateCode(methodspecbuilder);
-            }
-
-            if (declaration != null) {
-                declaration.generateCode(methodspecbuilder);
-            }
-
-            cmd.generateCode(methodspecbuilder);
-
-            if (getNextDeclaration() != null) {
-                getNextDeclaration().generateCode(typescpecbuilder);
-            }
-
-            typescpecbuilder.addMethod(methodspecbuilder.build());
-        }*/
     }
 
     public abstract static class Cmd extends AbstractNode {
@@ -713,19 +668,8 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
+            return -1;
         }
-
-        /*@Override//TODO implement
-        public void generateCode(MethodSpec.Builder methodspecbuilder) {
-            methodspecbuilder.beginControlFlow("case " + literal.getValue() + " :");
-            cmd.generateCode(methodspecbuilder);
-            methodspecbuilder.addStatement("break");
-            methodspecbuilder.endControlFlow();
-            if (getNextCmd() != null) {
-                getNextCmd().generateCode(methodspecbuilder);
-            }
-        }*/
     }
 
     public static class CondCmd extends Cmd {
@@ -1085,6 +1029,8 @@ public class AbstractTree {
         public abstract Tokens.TypeToken.Type getType();
     }
 
+    /*Defines the Type of a Store
+    * Gets used in StoDecl as an attribute*/
     public static class TypedIdentType extends TypedIdent<Tokens.IdentifierToken> {
 
         public final Tokens.IdentifierToken identifier;
@@ -1104,23 +1050,6 @@ public class AbstractTree {
                 + getBody("<Type Type='" + type + "'/>")
                 + getHead("</TypedIdentType>");
         }
-
-        /*@Override//TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            switch (type) {
-                case BOOL:
-                    methodscpecbuilder.addCode("boolean");
-                    break;
-                case INT:
-                    methodscpecbuilder.addCode("int");
-                    break;
-                case INT64:
-                default:
-                    methodscpecbuilder.addCode("long");
-                    break;
-            }
-            methodscpecbuilder.addCode(" " + identifier.getName());
-        }*/
 
         public String getParameterName() {
             return identifier.getName();
@@ -1452,7 +1381,7 @@ public class AbstractTree {
             if (expression1 instanceof StoreExpr) {
                 loc1 = ((StoreExpr) expression1).codeRef(loc, true, true, routine);
             } else if (expression1 instanceof FunCallExpr) {
-                loc1 = ((FunCallExpr) expression1).generateCode(loc, routine);
+                loc1 = expression1.generateCode(loc, routine);
             } else {
                 loc1 = expression1.generateCode(loc, routine);
             }
@@ -1592,11 +1521,6 @@ public class AbstractTree {
         }
         //TODO Implement
         public int generateCode(int loc, boolean procedure) {
-            /*methodspecbuilder.addCode(identifier.getName() + "(");
-            if (expressionlist != null) {
-                expressionlist.generateCode(methodspecbuilder);
-            }
-            methodspecbuilder.addCode(");" + System.lineSeparator());*/
             return -1;
         }
     }
@@ -1606,6 +1530,8 @@ public class AbstractTree {
         public final Expression expression;
 
         public final ExpressionList expressionlist;
+
+        public ExpressionInfo info;
 
         public ExpressionList(Expression expression, ExpressionList expressionlist, int idendation) {
             super(idendation);
@@ -1628,8 +1554,29 @@ public class AbstractTree {
             }
         }
         //TODO Implement
-        public int generateCode(int loc, boolean procedure) {
-            return -1;
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1;
+            if (info != null && info.getMechMode() == Tokens.MechModeToken.MechMode.COPY) {
+                if (expression instanceof StoreExpr) {
+                    loc1 = ((StoreExpr) expression).codeRef(loc, true, true, routine);
+                } else {
+                    loc1 = expression.generateCode(loc, routine);
+                }
+            } else {
+                if(info==null){
+                    if(expression instanceof StoreExpr){
+                        loc1 = ((StoreExpr) expression).codeRef(loc, true, true, routine);
+                    }else{
+                        loc1 = expression.generateCode(loc, routine);
+                    }
+
+                }else{
+                    loc1 = ((StoreExpr) expression).codeRef(loc, true, false, routine); // TODO
+                }
+
+            }
+
+            return (expressionlist != null ? expressionlist.generateCode(loc1, routine) : loc1);
         }
     }
 
@@ -1658,10 +1605,9 @@ public class AbstractTree {
                 nextglobalinit.checkCode();
             }
         }
-        //TODO Implement
-        public void generateCode(MethodSpec.Builder methodscpecbuilder) {
-            // FIXME: Implement code generation
-            throw new RuntimeException("Code generation not implemented yet!");
+
+        public int generateCode(int loc, boolean procedure) {
+            return -1;
         }
     }
 
@@ -1700,6 +1646,10 @@ public class AbstractTree {
         public void generateCode(MethodSpec.Builder methodscpecbuilder) {
             // FIXME: Implement code generation
             throw new RuntimeException("Code generation not implemented yet!");
+        }
+
+        public int generateCode(int loc, boolean procedure) {
+            return -1;
         }
     }
 }
