@@ -67,6 +67,7 @@ public class Compiler {
             System.out.println("===== Execute VM =====");
             ICodeArray codeArray = Checker.getcodeArray();
             System.out.println(codeArray);
+            codeArray.resize();
             new VirtualMachine(codeArray, codeArray.getSize());
 
         } catch (ScannerException exception) {
@@ -100,8 +101,11 @@ public class Compiler {
             + " endif \n"
             + "endprogram \n";*/
         String content = "program Assoc(in const m:int32)\n"
+            + "global \n"
+            + "var x:int32 \n"
             + "do \n"
-            + "x init := 2\n"
+            + "x init := 2;\n"
+            + "! x\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

@@ -44,7 +44,7 @@ public class AbstractTree {
             }
             if (declaration != null) {
                 declaration.checkCode();
-                declaration.checkAddress(-1);
+                declaration.checkLocale(-1);
             }
             if (cmd != null) {
                 cmd.checkCode();
@@ -108,11 +108,11 @@ public class AbstractTree {
 
         public void checkCode() throws CheckerException {
             //check if identifier exist in global store table
-            if (Checker.getGlobalStoreTable().getStore(typedident.getIdentifier().getName()) != null) {
-                throw new CheckerException("Identifier " + typedident.getIdentifier().getName() + " is already declared");
+            if (Checker.getGlobalStoreTable().getStore(getIdent()) != null) {
+                throw new CheckerException("Identifier " + getIdent() + " is already declared");
             }
             //store identifier in global store table
-            Checker.getGlobalStoreTable().addStore(new Store(typedident.getIdentifier().getName(), typedident.getType(), changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST));
+            Checker.getGlobalStoreTable().addStore(new Store(getIdent(), typedident.getType(), changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST));
             if (nextprogparam != null) {
                 nextprogparam.checkCode();
             }
@@ -120,6 +120,10 @@ public class AbstractTree {
 
         public int generateCode(int loc, boolean procedure) {
             return -1;
+        }
+
+        private String getIdent() {
+            return typedident.getIdentifier().getName();
         }
     }
 
@@ -211,7 +215,7 @@ public class AbstractTree {
 
         public abstract Tokens.TypeToken.Type checkCode() throws CheckerException;
 
-        public abstract int checkAddress(final int locals) throws CheckerException;
+        public abstract int checkLocale(final int locals) throws CheckerException;
 
         public abstract int generateCode(int loc) throws ICodeArray.CodeTooSmallError;
 
@@ -242,7 +246,15 @@ public class AbstractTree {
 
         @Override
         public Tokens.TypeToken.Type checkCode() throws CheckerException {
-            checkStore();
+            Store store = buildStore();
+            if (typedident instanceof TypedIdentType) {
+                if (!Checker.getGlobalStoreTable().addStore(store)) {
+                    throw new CheckerException("Identifier already declared: " + getIdent() + ":line: " + typedident.getIdentifier().getRow());
+                }
+            } else {
+                throw new CheckerException("Type is unknown : " + getIdent() + ":line: " + typedident.getIdentifier().getRow());
+            }
+
             if (getNextDeclaration() != null) {
                 getNextDeclaration().checkCode();
             }
@@ -250,7 +262,7 @@ public class AbstractTree {
         }
 
         @Override
-        public int checkAddress(final int locals) throws CheckerException {
+        public int checkLocale(final int locals) throws CheckerException {
             if (locals < 0) {
                 return -1;
             } else {
@@ -271,13 +283,14 @@ public class AbstractTree {
             while (!nextDeclNull) {
                 if (dec == null) {
                     nextDeclNull = true;
+                } else {
+                    dec = dec.nextdeclaration;
                 }
                 //Allocate space and safe store in the right
                 Checker.getcodeArray().put(loc1, new IInstructions.AllocBlock(1));
                 Checker.addIdentTable(getIdent(), Checker.getstackAddressHelper());
                 Checker.setstackAddressHelper(1);
                 loc1++;
-                dec = dec.nextdeclaration;
             }
             return loc1;
         }
@@ -290,7 +303,7 @@ public class AbstractTree {
         public Store checkStore() throws CheckerException{
             Store store = buildStore();
             if (typedident instanceof TypedIdentType) {
-                if (!Checker.getScope().getStoreTable().addStore(store)) {
+                if (!Checker.getGlobalStoreTable().addStore(store)) {
                     throw new CheckerException("Identifier already declared: " + getIdent() + ":line: " + typedident.getIdentifier().getRow());
                 }
             } else {
@@ -299,8 +312,6 @@ public class AbstractTree {
 
             return store;
         }
-
-
 
         @Override
         public String getIdent() {
@@ -374,7 +385,7 @@ public class AbstractTree {
         }
 
         @Override
-        public int checkAddress(int locals) throws CheckerException {
+        public int checkLocale(int locals) throws CheckerException {
             return 0; //TODO Lukas
         }
 
@@ -467,8 +478,13 @@ public class AbstractTree {
         }
 
         @Override
+        public int checkLocale(int locals) throws CheckerException {
+            return 0; //TODO implement
+        }
+
+        @Override
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
-            return -1;
+            return -1; //TODO implement
         }
 
         @Override
