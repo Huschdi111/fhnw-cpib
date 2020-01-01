@@ -47,6 +47,8 @@ public class Store extends Symbol {
         }
     }
 
+    public void setAddress(final int address) { this.address = address; }
+
     public void setRelative(final boolean relative) {
         this.relative = relative;
     }

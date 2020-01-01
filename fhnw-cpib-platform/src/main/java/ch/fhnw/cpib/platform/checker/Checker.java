@@ -11,7 +11,7 @@ public class Checker {
     private static RoutineTable routineTable = new RoutineTable();
     //Liste der Global deklarierten Variablen verwaltet den Store
     private static StoreTable globalStoreTable = new StoreTable();
-    //Identifier Table (Ich weiss noch nicht für was der ist)
+    //IdentifierTable Maped identifier auf eine bestimmte addresse auf dem Stack
     private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();
     //Scope der Funktion oder des Blockes (Besitzt einen eigenen StoreTable für die eigenen lokalen Variablen)
     private static Scope scope = null;
@@ -19,6 +19,7 @@ public class Checker {
     private static IVirtualMachine vm /*= new VirtualMachine(null, STORE_SIZE)*/;
     //Ergebnis Array der Code-Generierung enthält alle Instructions zum ausführen
     private static CodeArray codeArray = new CodeArray(STORE_SIZE);
+
     private static SwitchTable globalSwitchTable = new SwitchTable();
     //
     private static int stackAddressHelper = 0; //TODO what is this?

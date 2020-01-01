@@ -14,6 +14,9 @@ public class StoreTable {
         storeMap = new TreeMap<>();
     }
 
+    /*
+    * Returns Boolean: false if the identifier already exists
+    * */
     public boolean addStore(final Store store) {
         if (!storeMap.containsKey(store.getIdentifier())) {
             storeMap.put(store.getIdentifier(), store);
