@@ -20,7 +20,8 @@ public class AbstractTree {
 
         public final Cmd cmd;
 
-        public Program(Tokens.IdentifierToken identifier, ProgParam progparam, Declaration declaration, Cmd cmd) {
+        public Program(Tokens.IdentifierToken identifier, ProgParam progparam
+            , Declaration declaration, Cmd cmd) {
             super(0);
             this.identifier = identifier;
             this.progparam = progparam;
@@ -46,11 +47,8 @@ public class AbstractTree {
                 declaration.checkCode();
                 declaration.checkLocale(-1);
             }
-            if (cmd != null) {
-                cmd.checkCode();
-            }
             Checker.setScope(new Scope(Checker.getGlobalStoreTable().clone()));
-            cmd.checkCode();
+            if(cmd != null) cmd.checkCode(false);
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
@@ -112,18 +110,23 @@ public class AbstractTree {
                 throw new CheckerException("Identifier " + getIdent() + " is already declared");
             }
             //store identifier in global store table
-            Checker.getGlobalStoreTable().addStore(new Store(getIdent(), typedident.getType(), changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST));
+            Checker.getGlobalStoreTable().addStore(buildStore());
             if (nextprogparam != null) {
                 nextprogparam.checkCode();
             }
         }
 
-        public int generateCode(int loc, boolean procedure) {
-            return -1;
+        private String getIdent() {
+            try {
+                return typedident.getIdentifier().getName();
+            }catch(NullPointerException exp) {
+                return null;
+            }
         }
 
-        private String getIdent() {
-            return typedident.getIdentifier().getName();
+        private Store buildStore() {
+            return new Store(getIdent(), typedident.getType(),
+                changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST);
         }
     }
 
@@ -295,7 +298,7 @@ public class AbstractTree {
             return loc1;
         }
 
-        public Store buildStore() {
+        private Store buildStore() {
             return new Store(typedident.getIdentifier().getName(), typedident.getType(),
                 changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST);
         }
@@ -375,7 +378,7 @@ public class AbstractTree {
                 globalimport.checkCode(function);
             }
             if (cmd != null) {
-                cmd.checkCode();
+                cmd.checkCode(false); //TODO Lukas false or true
             }
             Checker.setScope(null);
             if (getNextDeclaration() != null) {
@@ -465,7 +468,7 @@ public class AbstractTree {
                 globalimport.checkCode(procedure);
             }
             if (cmd != null) {
-                cmd.checkCode();
+                cmd.checkCode(false); //TODO Lukas false or true
             }
             if (declaration != null) {
                 declaration.checkCode();
@@ -506,7 +509,7 @@ public class AbstractTree {
             return nextcmd;
         }
 
-        public abstract void checkCode() throws CheckerException;
+        public abstract void checkCode(boolean canInit) throws CheckerException;
 
         public abstract int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
@@ -525,9 +528,9 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -567,7 +570,7 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             List<ExpressionInfo> targetExprInfos = new ArrayList<>();
             List<ExpressionInfo> sourceExprInfos = new ArrayList<>();
 
@@ -596,7 +599,7 @@ public class AbstractTree {
                 }
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -640,17 +643,17 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             ExpressionInfo exprinfo = expression.checkCode();
             Switch s = new Switch(exprinfo.getName(), exprinfo.getType());
             //store switch with name and type
             Checker.getGlobalSwitchTable().insert(s);
-            repcasecmd.checkCode();
+            repcasecmd.checkCode(canInit);
             if (cmd != null) {
-                cmd.checkCode();
+                cmd.checkCode(canInit);
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -682,7 +685,7 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             HashMap<String, Switch> map = Checker.getGlobalSwitchTable().getTable();
             Iterator it = map.entrySet().iterator();
             while (it.hasNext()) {
@@ -715,7 +718,7 @@ public class AbstractTree {
                 Checker.getGlobalSwitchTable().insert(s);
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -755,20 +758,20 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             //check expr return type is from type BOOL
             ExpressionInfo exprinfo = expression.checkCode();
             if (exprinfo.getType() != Tokens.TypeToken.Type.BOOL) {
                 throw new CheckerException("IF condition needs to be BOOL. Current type: " + exprinfo.getType());
             }
             if (repcondcmd != null) {
-                repcondcmd.checkCode();
+                repcondcmd.checkCode(canInit);
             }
             if (othercmd != null) {
-                othercmd.checkCode();
+                othercmd.checkCode(canInit);
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -802,8 +805,8 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
-            repArrowCmd.checkCode();
+        public void checkCode(boolean canInit) throws CheckerException {
+            repArrowCmd.checkCode(canInit);
         }
 
         @Override
@@ -833,17 +836,17 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             //check expr return type is from type BOOL
             ExpressionInfo exprinfo = expression.checkCode();
             if (exprinfo.getType() != Tokens.TypeToken.Type.BOOL) {
                 throw new CheckerException("IF condition needs to be BOOL. Current type: " + exprinfo.getType());
             }
             if (cmd != null) {
-                cmd.checkCode();
+                cmd.checkCode(canInit);
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -879,17 +882,17 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             //check expr return type is from type BOOL
             ExpressionInfo exprinfo = expression.checkCode();
             if (exprinfo.getType() != Tokens.TypeToken.Type.BOOL) {
                 throw new CheckerException("ELSEIF condition needs to be BOOL. Current type: " + exprinfo.getType());
             }
             if (repcondcmd != null) {
-                repcondcmd.checkCode();
+                repcondcmd.checkCode(canInit);
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -922,14 +925,14 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             //check expr return type is from type BOOL
             ExpressionInfo exprinfo = expression.checkCode();
             if (exprinfo.getType() != Tokens.TypeToken.Type.BOOL && exprinfo.getType() != null) {
                 throw new CheckerException("WHILE condition needs to be BOOL. Current type: " + exprinfo.getType());
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -967,12 +970,12 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             if (globalinit != null) {
                 globalinit.checkCode();
             }
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -1004,9 +1007,9 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                getNextCmd().checkCode(canInit);
             }
         }
 
@@ -1046,16 +1049,17 @@ public class AbstractTree {
         }
 
         @Override
-        public void checkCode() throws CheckerException {
+        public void checkCode(boolean canInit) throws CheckerException {
             if (getNextCmd() != null) {
-                getNextCmd().checkCode();
+                ExpressionInfo exInfo = expression.checkCode();
+                type = exInfo.getType();
+                getNextCmd().checkCode(canInit);
             }
         }
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1;
-
             loc1 = expression.generateCode(loc, routine);
             Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
             if (expression instanceof StoreExpr) {
@@ -1065,7 +1069,7 @@ public class AbstractTree {
                     Checker.getcodeArray().put(loc1++, new IInstructions.OutputInt(((StoreExpr) expression).identifier.getName()));
                 }
             }else {
-                throw new IllegalArgumentException("Wrong Expression while code generation");
+                throw new IllegalArgumentException("Must be a StoreExpression for output");
             }
             return (nextcmd != null ? nextcmd.generateCode(loc1, routine) : loc1);
         }
@@ -1090,7 +1094,8 @@ public class AbstractTree {
 
         public final Tokens.TypeToken.Type type;
 
-        public TypedIdentType(Tokens.IdentifierToken identifier, Tokens.TypeToken.Type type, int idendation) {
+        public TypedIdentType(Tokens.IdentifierToken identifier
+            , Tokens.TypeToken.Type type, int idendation) {
             super(idendation);
             this.identifier = identifier;
             this.type = type;
@@ -1134,6 +1139,7 @@ public class AbstractTree {
         public abstract int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError;
     }
 
+    //Represents a plain Number
     public static class LiteralExpr extends Expression {
 
         public final Tokens.LiteralToken literal;
@@ -1169,6 +1175,7 @@ public class AbstractTree {
         }
     }
 
+    //Represents a Variable
     public static class StoreExpr extends Expression {
 
         public final Tokens.IdentifierToken identifier;
@@ -1217,7 +1224,7 @@ public class AbstractTree {
                         }
                     }
                 }
-                //store not initialized variable because before a initialisation of a variable i can be used
+                //store not initialized variable because before a initialisation of a variable it can be used
                 if (Checker.getGlobalStoreTable().getStore(identifier.getName()) == null) {
                     Checker.getGlobalStoreTable().addStore(new Store(identifier.getName(), null, false));
                     return new ExpressionInfo(identifier.getName(), null);
@@ -1233,33 +1240,47 @@ public class AbstractTree {
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             int loc1 = loc;
+            //Get the store table of this scope
+            Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
+            //if we are in a routine
             if (routine) {
+                //and if the procedureTable knows about this identifier
                 if (Checker.getprocIdentTable().containsKey(identifier.getName())) {
+                    //and the store is not null
                     if(store==null){
-                        Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
+                        //then load x relative to fp
+                        Checker.getcodeArray().put(loc1++
+                            , new IInstructions
+                                .LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
                         return loc1;
+                     //or dereference the variable if it is a valid store
                     }else{
                         loc1 = store.codeRef(loc, true, false, routine);
                         return loc1;
                     }
-
+                //or add it as as a new identifier just for the output
                 } else {
                     Checker.addIdentTable(identifier.getName(), loc);
                     return ((store != null) ? store.codeLoad(loc, routine) : loc);
                 }
+              //or if it is not in a routine
             } else {
+                //check if the global identifier table knows about it
                 if (Checker.getIdentTable().containsKey(identifier.getName())) {
+                    //And load it relative to the framepointer
                     Checker.getcodeArray().put(loc,
                         new IInstructions.LoadAddrRel(Checker.getIdentTable().get(identifier.getName()).intValue()));
                     return loc + 1;
+                //or add it to the global identifier table
                 } else {
                     Checker.addIdentTable(identifier.getName(), loc);
                     return ((store != null) ? store.codeLoad(loc, routine) : loc);
                 }
             }
         }
+
+
         public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
             Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);

@@ -55,7 +55,6 @@ public class VirtualMachine implements IVirtualMachine {
     // - (forall i | 0 <= i < code.getSize() : code.get(i) != null)
     private void loadProgram(ICodeArray code) {
         this.code= new IExecInstr[code.getSize()];
-        System.out.println("Cout CodeArray: " + code.getSize());
         for (int i= 0; i < code.getSize(); i++) {
             this.code[i]= code.get(i).toExecInstr(this);
         }

@@ -11,7 +11,7 @@ public class Checker {
     private static RoutineTable routineTable = new RoutineTable();
     //Liste der Global deklarierten Variablen verwaltet den Store
     private static StoreTable globalStoreTable = new StoreTable();
-    //IdentifierTable Maped identifier auf eine bestimmte addresse auf dem Stack
+    //IdentifierTable Maped identifier auf eine bestimmte addresse auf dem Stack für die globalen Variablen
     private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();
     //Scope der Funktion oder des Blockes (Besitzt einen eigenen StoreTable für die eigenen lokalen Variablen)
     private static Scope scope = null;
@@ -25,8 +25,11 @@ public class Checker {
     private static int stackAddressHelper = 0; //TODO what is this?
     //private static DeclarationProcedure declaration; //TODO what is this?
 
+    //mapped einen identifier auf eine Addresse und eine Referenz {String add, String mechmode}
     private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
 
+
+    /*GETTER AND SETTER*/
     public static IVirtualMachine getVM() { return vm; }
 
     public static HashMap<String, String[]> getprocIdentTable() { return procidentTable; }
