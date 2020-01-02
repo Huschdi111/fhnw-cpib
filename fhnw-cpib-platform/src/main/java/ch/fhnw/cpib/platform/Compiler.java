@@ -103,15 +103,15 @@ public class Compiler {
             + "endprogram \n";*/
         String content = "program Assoc()\n"
             + "global \n"
-            + "var x:int32 \n"
-            //+ "const y:int32 \n"
+            + "var x:int32; \n"
+            + "const y:int32 \n"
             + "do \n"
-            //+ "y init := 3;\n"
+            + "y init := 3;\n"
             + "x init := 2;\n"
             + "if x == 2 then\n"
             + "? x \n"
             + "endif;\n"
-            + "x := (x + x) * 2;"
+            + "x := (x + y) * 2;"
             + "! x\n"
             + "endprogram \n";
 

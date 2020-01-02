@@ -285,16 +285,15 @@ public class AbstractTree {
             boolean nextDeclNull = false;
 
             while (!nextDeclNull) {
-                if (dec == null) {
+                if (dec.nextdeclaration == null) {
                     nextDeclNull = true;
-                } else {
-                    dec = dec.nextdeclaration;
                 }
                 //Allocate space and safe store in the right
                 Checker.getcodeArray().put(loc1, new IInstructions.AllocBlock(1));
-                Checker.addIdentTable(getIdent(), Checker.getstackAddressHelper());
+                Checker.addIdentTable(dec.getIdent(), Checker.getstackAddressHelper());
                 Checker.setstackAddressHelper(1);
                 loc1++;
+                if(!nextDeclNull) dec = dec.nextdeclaration;
             }
             return loc1;
         }
