@@ -21,8 +21,8 @@ public class Checker {
     private static CodeArray codeArray = new CodeArray(STORE_SIZE);
 
     private static SwitchTable globalSwitchTable = new SwitchTable();
-    //
-    private static int stackAddressHelper = 0; //TODO what is this?
+    //Safes the temporary size of the last store
+    private static int stackAddressHelper = 0;
     //private static DeclarationProcedure declaration; //TODO what is this?
 
     //mapped einen identifier auf eine Addresse und eine Referenz {String add, String mechmode}

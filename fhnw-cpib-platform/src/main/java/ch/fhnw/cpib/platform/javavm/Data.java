@@ -16,6 +16,10 @@ public class Data
         IntData(int i) { this.i= i; }
         int getData() { return i; }
         public IntData copy() { return intCopy(this); }
+        @Override
+        public String toString() {
+            return Integer.toString(i);
+        }
     }
 
     static IntData intNew(int i)
@@ -51,6 +55,10 @@ public class Data
         FloatData(float f) { this.f= f; }
         float getData() { return f; }
         public FloatData copy() { return floatCopy(this); }
+        @Override
+        public String toString() {
+            return Float.toString(f);
+        }
     }
 
     static FloatData floatNew(float f)

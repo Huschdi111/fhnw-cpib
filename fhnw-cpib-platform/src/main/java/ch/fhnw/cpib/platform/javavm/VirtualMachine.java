@@ -69,6 +69,7 @@ public class VirtualMachine implements IVirtualMachine {
         fp= 0;
         while (pc > -1)
         {
+            System.out.println(toString());
             code[pc].execute();
         }
     }
@@ -148,6 +149,7 @@ public class VirtualMachine implements IVirtualMachine {
     }
 
     // load immediate value (value -> stack)
+    // safes value to top of stack
     public class LoadImIntExec extends LoadImInt implements IExecInstr {
         public LoadImIntExec(int value) { super(value); }
 
@@ -162,6 +164,7 @@ public class VirtualMachine implements IVirtualMachine {
     }
 
     // load address relative to frame pointer (address -> stack)
+    //takes address at fp + relAddress to top of stack
     public class LoadAddrRelExec extends LoadAddrRel implements IExecInstr {
         public LoadAddrRelExec(int relAddress) { super(relAddress); }
 
@@ -177,6 +180,8 @@ public class VirtualMachine implements IVirtualMachine {
 
     // load instruction with address on stack
     // load (inside stack -> top of stack) operation
+    // makes sp - 1 from address to value
+    // sp stays the same
     public class DerefExec extends Deref implements IExecInstr {
         public void execute()
         {
@@ -209,7 +214,6 @@ public class VirtualMachine implements IVirtualMachine {
     }
 
     // dyadic instructions
-
     public class AddIntExec extends AddInt implements IExecInstr {
         public void execute()
         {
@@ -382,5 +386,18 @@ public class VirtualMachine implements IVirtualMachine {
             System.out.println("! " + indicator + " : int = " + output);
             pc= pc + 1;
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append("STORE: [");
+        for(Data.IBaseData dataP : store){
+            if(dataP == null) sBuilder.append("undef");
+            else sBuilder.append(dataP.toString());
+            sBuilder.append(",");
+        }
+        sBuilder.append("]");
+        return sBuilder.toString();
     }
 }

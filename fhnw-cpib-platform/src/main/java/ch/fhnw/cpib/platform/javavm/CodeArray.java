@@ -21,6 +21,7 @@ public class CodeArray implements ICodeArray {
     public void put(int loc, IInstr instr) throws CodeTooSmallError {
         if (loc < code.length) {
             code[loc]= instr;
+            System.out.println("\t Debug INST: " + instr.toString());
         }
         else {
             throw new CodeTooSmallError();

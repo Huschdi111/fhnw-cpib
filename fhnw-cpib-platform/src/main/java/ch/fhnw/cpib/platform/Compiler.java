@@ -68,10 +68,6 @@ public class Compiler {
             ICodeArray codeArray = Checker.getcodeArray();
             System.out.println(codeArray);
             codeArray.resize();
-
-            //DEBUGINFO
-            System.out.println("GlobalStoreTable");
-            System.out.println(Checker.getGlobalStoreTable().getStore("x"));
             new VirtualMachine(codeArray, codeArray.getSize());
 
 
@@ -110,7 +106,6 @@ public class Compiler {
             + "var x:int32 \n"
             + "do \n"
             + "x init := 2;\n"
-            + "x := 2 + x;\n"
             + "! x\n"
             + "endprogram \n";
 

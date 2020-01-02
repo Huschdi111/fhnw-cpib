@@ -52,6 +52,7 @@ public class AbstractTree {
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+            System.out.println("PROGRAM generate");
             int loc1 = loc;
             int loc2 = loc;
 
@@ -106,11 +107,10 @@ public class AbstractTree {
 
         public void checkCode() throws CheckerException {
             //check if identifier exist in global store table
-            if (Checker.getGlobalStoreTable().getStore(getIdent()) != null) {
+            if (!Checker.getGlobalStoreTable().addStore(buildStore())) {
                 throw new CheckerException("Identifier " + getIdent() + " is already declared");
             }
-            //store identifier in global store table
-            Checker.getGlobalStoreTable().addStore(buildStore());
+
             if (nextprogparam != null) {
                 nextprogparam.checkCode();
             }
@@ -279,6 +279,7 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
+            System.out.println("STODECL generate");
             int loc1 = loc;
             Declaration dec = this;
             boolean nextDeclNull = false;
@@ -605,14 +606,13 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            int loc1;
-            loc1 = expression1.generateCode(loc, routine);
-            if (!(expression1 instanceof StoreExpr)) {
-                loc1 = expression1.generateCode(loc1, routine);
-                Checker.getcodeArray().put(loc1++, new IInstructions.Store());
-            } else {
-                loc1 = ((StoreExpr) expression1).codeRef(loc1, true, true, routine);
-                Checker.getcodeArray().put(loc1++, new IInstructions.Store());
+            System.out.println("ASSICMD generate");
+            int loc1 = loc;
+            if(expression1 instanceof StoreExpr) {
+                int locAfAdress = expression1.generateCode(loc1, routine); //ladet die addresse
+                int locAfValue = expression2.generateCode(locAfAdress, routine); // legt wert auf locAfAdresse ab
+                Checker.getcodeArray().put(locAfValue, new IInstructions.Store());
+                loc1 = locAfValue + 1;
             }
             return (getNextCmd() != null ? getNextCmd().generateCode(loc1, routine) : loc1);
         }
@@ -1059,6 +1059,7 @@ public class AbstractTree {
 
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            System.out.println("OUTPUTCMD generate");
             int loc1;
             loc1 = expression.generateCode(loc, routine);
             Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
@@ -1167,11 +1168,13 @@ public class AbstractTree {
             }
             throw new CheckerException("Invalid literal type");
         }
+
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            // Compiler.getVM().IntLoad(loc, literal.getLiteral());
-            Checker.getcodeArray().put(loc, new IInstructions.LoadImInt(Integer.valueOf(literal.getValue())));
-            return loc + 1;
+            int loc1 = loc;
+            Checker.getcodeArray().put(loc1, new IInstructions.LoadImInt(Integer.valueOf(literal.getValue())));
+            loc1++;
+            return loc1;
         }
     }
 
@@ -1229,10 +1232,6 @@ public class AbstractTree {
                     Checker.getGlobalStoreTable().addStore(new Store(identifier.getName(), null, false));
                     return new ExpressionInfo(identifier.getName(), null);
                 }
-                //throw exception in the end
-                //if (store == null) {
-                //    throw new CheckerException("Identifier " + identifier.getName() + " is not declared");
-                //}
             }
             return new ExpressionInfo(store.getIdentifier(), store.getType());
         }
@@ -1245,42 +1244,15 @@ public class AbstractTree {
             Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             //if we are in a routine
             if (routine) {
-                //and if the procedureTable knows about this identifier
-                if (Checker.getprocIdentTable().containsKey(identifier.getName())) {
-                    //and the store is not null
-                    if(store==null){
-                        //then load x relative to fp
-                        Checker.getcodeArray().put(loc1++
-                            , new IInstructions
-                                .LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
-                        return loc1;
-                     //or dereference the variable if it is a valid store
-                    }else{
-                        loc1 = store.codeRef(loc, true, false, routine);
-                        return loc1;
-                    }
-                //or add it as as a new identifier just for the output
-                } else {
-                    Checker.addIdentTable(identifier.getName(), loc);
-                    return ((store != null) ? store.codeLoad(loc, routine) : loc);
-                }
-              //or if it is not in a routine
+                //TODO How do it in routine
             } else {
-                //check if the global identifier table knows about it
-                if (Checker.getIdentTable().containsKey(identifier.getName())) {
-                    //And load it relative to the framepointer
-                    Checker.getcodeArray().put(loc,
-                        new IInstructions.LoadAddrRel(Checker.getIdentTable().get(identifier.getName()).intValue()));
-                    return loc + 1;
-                //or add it to the global identifier table
-                } else {
-                    Checker.addIdentTable(identifier.getName(), loc);
-                    return ((store != null) ? store.codeLoad(loc, routine) : loc);
-                }
+                Checker.getcodeArray().put(loc1, new IInstructions.LoadImInt(Checker.getIdentTable().get(identifier.getName())));
+                if(!store.isInitialized()) store.initialize();
             }
+            loc1++;
+            return loc1;
         }
-
-
+        //
         public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
             Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);
@@ -1627,8 +1599,9 @@ public class AbstractTree {
                 expressionlist.checkCode(expressioninfos);
             }
         }
-        //TODO Implement
+
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            System.out.println("EXPRLIST generate");
             int loc1;
             if (info != null && info.getMechMode() == Tokens.MechModeToken.MechMode.COPY) {
                 if (expression instanceof StoreExpr) {
