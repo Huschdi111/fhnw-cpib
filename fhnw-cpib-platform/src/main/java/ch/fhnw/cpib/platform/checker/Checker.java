@@ -9,7 +9,7 @@ public class Checker {
     private static final int STORE_SIZE = 1024;
     //List der Routinen (Procedures oder Functions)
     private static RoutineTable routineTable = new RoutineTable();
-    //Liste der Global deklarierten Variablen verwaltet den Store
+    //Liste der Global deklarierten Variablen verwaltet er Store
     private static StoreTable globalStoreTable = new StoreTable();
     //IdentifierTable Maped identifier auf eine bestimmte addresse auf dem Stack für die globalen Variablen
     private static HashMap<String,Integer> identTable = new HashMap<String,Integer>();

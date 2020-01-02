@@ -93,7 +93,6 @@ public class Store extends Symbol {
             //Compiler.getVM().Deref(loc1++);
             Checker.getcodeArray().put(loc1++, new Deref());
         }
-
         return loc1;
     }
 

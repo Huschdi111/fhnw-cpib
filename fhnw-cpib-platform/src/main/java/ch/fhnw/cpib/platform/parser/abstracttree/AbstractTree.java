@@ -199,7 +199,7 @@ public class AbstractTree {
             if (nextparam != null) {
                 nextparam.generateCode(loc, procedure);
             }
-            return -1;
+            return -1; //
         }
     }
 
@@ -313,7 +313,6 @@ public class AbstractTree {
             } else {
                 throw new CheckerException("Type is unknown : " + getIdent() + ":line: " + typedident.getIdentifier().getRow());
             }
-
             return store;
         }
 
@@ -781,7 +780,10 @@ public class AbstractTree {
             int loc2 = cmd.generateCode(loc1 + 1, routine);
             // Compiler.getVM().CondJump(loc1, loc2 + 1);
             Checker.getcodeArray().put(loc1, new IInstructions.CondJump(loc2 + 1));
-            int loc3 = othercmd.generateCode(loc2 + 1, routine);
+            int loc3;
+
+            if(othercmd == null) loc3 = loc2;
+            else loc3 = othercmd.generateCode(loc2 + 1, routine);
             // Compiler.getVM().UncondJump(loc2, loc3);
             Checker.getcodeArray().put(loc2, new IInstructions.UncondJump(loc3));
             return (nextcmd != null ? nextcmd.generateCode(loc3, routine) : loc3);
