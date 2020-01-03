@@ -888,7 +888,7 @@ public class AbstractTree {
 
         @Override
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
+            return repArrowCmd.generateCode(loc,  routine);
         }
     }
 
@@ -928,8 +928,19 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return 0;
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int locJump = expression.generateCode(loc, routine);;
+            int locCMD = locJump + 1;
+            //Where to jump to locCMDEnd
+            int locCMDEnd = cmd.generateCode(locCMD, routine);
+            //reserve the space for unconditional jump until end of guard if is known
+            int locUncondJump = locCMDEnd;
+            locCMDEnd++;
+            //Now add the Cond jump to the end of cmd decl
+            Checker.getcodeArray().put(locJump, new IInstructions.CondJump(locCMDEnd));
+            int locEndNextConditional = (nextcmd != null)? nextcmd.generateCode(locCMDEnd, routine): locCMDEnd;
+            Checker.getcodeArray().put(locUncondJump, new IInstructions.UncondJump(locEndNextConditional));
+            return locEndNextConditional;
         }
     }
 

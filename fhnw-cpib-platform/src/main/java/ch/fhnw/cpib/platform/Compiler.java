@@ -100,7 +100,7 @@ public class Compiler {
             + " else x := x + 2\n"
             + " endif \n"
             + "endprogram \n";*/
-        String content = "program Assoc()\n"
+        /*String content = "program Assoc()\n"
             + "global \n"
             + "var x:int32; \n"
             + "const y:int32 \n"
@@ -116,6 +116,18 @@ public class Compiler {
             + "endif;\n"
             + "x := (x + y) * 2;"
             + "! x\n"
+            + "endprogram \n";*/
+        String content = "program Assoc()\n"
+            + "global \n"
+            + "var x:int32; \n"
+            + "const y:int32 \n"
+            + "do \n"
+            + "y init := 3;\n"
+            + "x init := 1;\n"
+            + "guardif \n"
+            + "| y > 2 => x := 1\n"
+            + "| x==1 => x := 2\n"
+            + "endguardif\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);
