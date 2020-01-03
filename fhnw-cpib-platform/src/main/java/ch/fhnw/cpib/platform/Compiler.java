@@ -133,13 +133,16 @@ public class Compiler {
 
             String content = "program Assoc()\n"
             + "global \n"
-            + "  proc print(copy var x:int32) do \n"
-            + "    ! x \n"
-            + "  endproc; \n"
+            + "  fun plusOne(copy var x:int32) returns y:int32 \n "
+            + "  do \n"
+            + "     x := x + 1;\n"
+            + "     if x < 6 then y := plusOne(x) endif\n"
+            + "  endfun; \n"
             + "  var x:int32 \n"
             + "do \n"
             + "  x init := 3;\n"
-            + "  call print(x)\n"
+            + "  x := plusOne(x);\n"
+            + "  ! x \n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

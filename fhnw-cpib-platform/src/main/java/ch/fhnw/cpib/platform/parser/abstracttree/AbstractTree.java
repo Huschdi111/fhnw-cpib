@@ -407,19 +407,13 @@ public class AbstractTree {
                 throw new CheckerException("Function " + identifier.getName() + " is already declared.");
             }
             Checker.setScope(function.getScope());
+
             if (param != null) {
                 param.checkCode(function);
             }
-            if (storedeclaration != null) {
-                storedeclaration.checkCode();
-            }
-            if (globalimport != null) {
-                globalimport.checkCode(function);
-            }
-            if (cmd != null) {
-                cmd.checkCode(false); //TODO Lukas false or true
-            }
+
             Checker.setScope(null);
+
             if (getNextDeclaration() != null) {
                 getNextDeclaration().checkCode();
             }
@@ -428,7 +422,21 @@ public class AbstractTree {
 
         @Override
         public int checkLocale(int locals) throws CheckerException {
-            return 0; //TODO Lukas
+            if (locals >= 0) {
+                throw new CheckerException("Function declarations are only allowed globally! line: " + identifier.getRow());
+            }
+            Routine routine = Checker.getRoutineTable().getTable().get(identifier.getName());
+            Checker.setScope(routine.getScope());
+            if (globalimport != null)
+                globalimport.checkCode(routine);
+            int localsCount = param.calculateAddress(routine.getParameters().size(), 0);
+
+            if (declaration != null)
+                declaration.checkLocale(localsCount);
+
+            Checker.setScope(null);
+
+            return -1;
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
