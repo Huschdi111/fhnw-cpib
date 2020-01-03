@@ -28,7 +28,6 @@ public class Checker {
     //mapped einen identifier auf eine Addresse und eine Referenz {String add, String mechmode}
     private static HashMap<String,String[]> procidentTable = new HashMap<String,String[]>();
 
-
     /*GETTER AND SETTER*/
     public static IVirtualMachine getVM() { return vm; }
 

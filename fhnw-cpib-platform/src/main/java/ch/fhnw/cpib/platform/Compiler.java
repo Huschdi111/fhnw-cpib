@@ -66,7 +66,6 @@ public class Compiler {
             //Execute the code array
             System.out.println("===== Execute VM =====");
             ICodeArray codeArray = Checker.getcodeArray();
-            System.out.println(codeArray);
             codeArray.resize();
             new VirtualMachine(codeArray, codeArray.getSize()); //TODO find the right size for stack
 
@@ -108,6 +107,10 @@ public class Compiler {
             + "do \n"
             + "y init := 3;\n"
             + "x init := 2;\n"
+            + "while y > 0 do\n"
+            + "  y := y - 1;\n"
+            + "  ! y\n"
+            + "endwhile;\n"
             + "if x == 2 then\n"
             + "? x \n"
             + "endif;\n"

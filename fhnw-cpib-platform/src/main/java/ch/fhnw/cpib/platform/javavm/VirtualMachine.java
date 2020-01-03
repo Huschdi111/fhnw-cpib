@@ -69,7 +69,10 @@ public class VirtualMachine implements IVirtualMachine {
         fp= 0;
         while (pc > -1)
         {
+            //Debug
             System.out.println(toString());
+            System.out.println(code[pc].getClass());
+            //code execution
             code[pc].execute();
         }
     }
