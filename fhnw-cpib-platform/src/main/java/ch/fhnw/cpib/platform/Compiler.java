@@ -117,7 +117,7 @@ public class Compiler {
             + "x := (x + y) * 2;"
             + "! x\n"
             + "endprogram \n";*/
-        String content = "program Assoc()\n"
+        /*String content = "program Assoc()\n"
             + "global \n"
             + "var x:int32; \n"
             + "const y:int32 \n"
@@ -129,6 +129,17 @@ public class Compiler {
             + "| x==1 => x := x + 2\n"
             + "endguardif;\n"
             + "! x\n"
+            + "endprogram \n";*/
+
+            String content = "program Assoc()\n"
+            + "global \n"
+            + "  proc print(copy var x:int32) do \n"
+            + "    ! x \n"
+            + "  endproc; \n"
+            + "  var x:int32 \n"
+            + "do \n"
+            + "  x init := 3;\n"
+            + "  call print(x)\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

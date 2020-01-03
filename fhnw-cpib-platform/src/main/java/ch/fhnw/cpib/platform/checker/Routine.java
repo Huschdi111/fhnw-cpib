@@ -20,7 +20,7 @@ public class Routine {
 
     private List<Parameter> param = new ArrayList<>();
 
-    private List<AbstractTree.GlobalImport> globalimports = new ArrayList<>();
+    private List<GlobImp> globalimports = new ArrayList<>();
 
     private List<Integer> calls = new ArrayList<Integer>();
 
@@ -61,7 +61,11 @@ public class Routine {
         return returntype;
     }
 
-    public void addGlobalImport(AbstractTree.GlobalImport globalimport) { globalimports.add(globalimport); }
+    public void addGlobalImport(GlobImp globalimport) { globalimports.add(globalimport); }
+
+    public List<GlobImp> getGlobImpList(){
+        return globalimports;
+    }
 
     public final void addCall(final int loc) {
         calls.add(loc);

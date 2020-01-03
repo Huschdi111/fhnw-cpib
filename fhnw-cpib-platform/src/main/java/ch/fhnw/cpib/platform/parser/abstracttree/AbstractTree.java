@@ -6,6 +6,7 @@ import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IInstructions;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
+
 import java.util.*;
 
 public class AbstractTree {
@@ -164,7 +165,9 @@ public class AbstractTree {
 
         public void checkCode(Routine routine) throws CheckerException {
             Store store = buildStore();
-            Checker.getScope().getStoreTable().addStore(store);
+            if(!Checker.getScope().getStoreTable().addStore(store))
+                throw new CheckerException("No dublicate declaration of parameter: "
+                    + getIdent() + "in procedure: " + routine.getIdentifier());
             switch (flowmode.getFlowMode()) {
                 case IN:
                     //passing parameter must be constant
@@ -495,17 +498,13 @@ public class AbstractTree {
         public Tokens.TypeToken.Type checkCode() throws CheckerException {
             //store function in global procedure table
             Routine procedure = new Routine(identifier.getName(), RoutineType.PROCEDURE);
+            Checker.setScope(procedure.getScope());
+
             if(!Checker.getRoutineTable().insert(procedure))
                 throw new CheckerException("No duplicate declaration of procedure: " + identifier.getName());
-            Checker.setScope(procedure.getScope());
+
             if (param != null) {
                 param.checkCode(procedure);
-            }
-
-            if (declaration != null) {
-                if(declaration instanceof FunDecl || declaration instanceof ProcDecl )
-                    throw new CheckerException("Function or Procedure can only be declared globally: " + identifier.getName());
-                declaration.checkCode();
             }
 
             Checker.setScope(null);
@@ -519,7 +518,7 @@ public class AbstractTree {
         public int checkLocale(int locals) throws CheckerException {
             //Checke das die Procedur nur global definiert werden darf
             if (locals >= 0) {
-                throw new CheckerException("Function declarations are only allowed globally!");
+                throw new CheckerException("procedure declarations are only allowed globally!");
             }
             Routine routine = Checker.getRoutineTable().getTable().get(identifier.getName());
             Checker.setScope(routine.getScope());
@@ -536,8 +535,9 @@ public class AbstractTree {
                 declaration.checkLocale(localsCount);
             }
 
-            cmd.checkCode(false);
+            if(cmd != null) cmd.checkCode(false);
             Checker.setScope(null);
+
             return -1;
         }
 
@@ -547,7 +547,6 @@ public class AbstractTree {
             Routine routine = Checker.getRoutineTable().getTable().get(getIdent());
             Checker.setScope(routine.getScope());
             routine.setAddress(loc1);
-            //relative negative addressen
             int numOfParam = routine.getParameters().size();
             int i = 0 - numOfParam;
             for (Parameter p : routine.getParameters()){
@@ -558,8 +557,6 @@ public class AbstractTree {
                 }
                 i += 1;
             }
-            param.generateCode(loc1, numOfParam);
-            loc1 += numOfParam;
             loc1 = (cmd != null)? cmd.generateCode(loc1, true): loc1;
             Checker.getcodeArray().put(loc1++, new IInstructions.Return(1));
             return loc1;
@@ -1061,12 +1058,49 @@ public class AbstractTree {
 
         @Override
         public void checkCode(boolean canInit) throws CheckerException {
-            if (globalinit != null) {
-                globalinit.checkCode();
+            Tokens.IdentifierToken ident = routinecall.identifier;
+            RoutineType type = Checker
+                .getRoutineTable().getTable()
+                .get(ident.getName()).getRoutineType();
+            if (type == null) {
+                throw new CheckerException("Ident " + ident.getName() + " not declared Line: " + ident.getRow());
+            } else if (type != RoutineType.PROCEDURE) {
+                throw new CheckerException("Function call " + ident.getName() + " found in left part of an assignement on line: " +
+                    ident.getRow());
             }
-            if (getNextCmd() != null) {
-                getNextCmd().checkCode(canInit);
+            Routine routine = Checker.getRoutineTable().getTable().get(ident.getName());
+
+            List<Parameter> paramList = new ArrayList<Parameter>(
+                routine.getParameters());
+            Set<String> aliasList = new HashSet<String>();
+            routinecall.expressionlist.checkCode(paramList, aliasList, canInit);
+
+            Set<String> globInits;
+            if (globalinit != null)
+                globInits = globalinit.checkCode(new HashSet<>());
+            else
+                globInits = null;
+
+            for (GlobImp globImp : routine.getGlobImpList()) {
+                assert globInits != null;
+                if (globInits.contains(globImp.getIdent())) {
+                    ((Store) Checker.getScope().getStoreTable().getStore(globImp.getIdent())).initialize();
+                    globInits.remove(globImp.getIdent());
+                }
+
+                if (aliasList.contains(globImp.getIdent())) {
+                    throw new CheckerException("Global import is already used as a parameter! Ident: " + globImp.getIdent()
+                        + " line: " + ident.getRow());
+                }
             }
+
+            if (globInits != null && globInits.size() > 0) {
+                throw new CheckerException("Global init is not importet! Ident: " + globInits.iterator().next()
+                    + " line: " + ident.getRow());
+            }
+
+            if (getNextCmd() != null)
+                nextcmd.checkCode(canInit);
         }
 
         @Override
@@ -1357,6 +1391,10 @@ public class AbstractTree {
         public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
             Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);
+        }
+
+        Store getStore() {
+            return Checker.getGlobalStoreTable().getStore(identifier.getName());
         }
     }
 
@@ -1681,6 +1719,8 @@ public class AbstractTree {
 
         public ExpressionInfo info;
 
+        private Parameter param;
+
         public ExpressionList(Expression expression, ExpressionList expressionlist, int idendation) {
             super(idendation);
             this.expression = expression;
@@ -1700,6 +1740,35 @@ public class AbstractTree {
             if (expressionlist != null) {
                 expressionlist.checkCode(expressioninfos);
             }
+        }
+
+        void checkCode(final List<Parameter> paramList, final Set<String> aliasList,
+                   final boolean canInit) throws CheckerException {
+            if (paramList.size() <= 0) {
+                throw new CheckerException("Routine takes less parameters than provided. line: ");
+            }
+            param = paramList.get(0);
+            paramList.remove(0);
+            TypedIdent<Tokens.IdentifierToken> type;
+            if (param.getMechMode() == Tokens.MechModeToken.MechMode.COPY) {
+                Object tmp = expression.checkCode();
+            } else {
+                Object tmp = expression.checkCode();
+                if (!(expression instanceof StoreExpr)) {
+                    throw new CheckerException("Only stores can be used as IN REF parameter!");
+                }
+                if (aliasList.contains(((StoreExpr) expression).getStore().getIdentifier())) {
+                    throw new CheckerException("Store is already used a parameter!");
+                }
+                aliasList.add(((StoreExpr) expression).getStore().getIdentifier());
+            }
+
+            /*if (type.getValue() != ((TypedIdentType) param.getType()).getType().getValue()) {
+                throw new ContextError("Wrong paramter type!", expression.getLine());
+            }*/
+
+            if (expressionlist != null)
+                expressionlist.checkCode(paramList, aliasList, canInit);
         }
 
         public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
@@ -1724,7 +1793,6 @@ public class AbstractTree {
                 }
 
             }
-
             return (expressionlist != null ? expressionlist.generateCode(loc1, routine) : loc1);
         }
     }
@@ -1749,10 +1817,18 @@ public class AbstractTree {
                 + getHead("</GlobalInit>");
         }
 
-        public void checkCode() {
-            if (nextglobalinit != null) {
-                nextglobalinit.checkCode();
+        public Set<String> checkCode(final Set<String> initList) throws CheckerException{
+            if (initList.contains(identifier.getName())) {
+                throw new CheckerException("Global init already declared!" + " Ident: " + identifier.getName()
+                    + " line: " + identifier.getRow());
+            } else {
+                initList.add(identifier.getName());
             }
+
+            if (nextglobalinit != null) {
+                return nextglobalinit.checkCode(initList);
+            }
+            return initList;
         }
 
         public int generateCode(int loc, boolean procedure) {
@@ -1788,9 +1864,32 @@ public class AbstractTree {
                 + getHead("</GlobalImport>");
         }
 
-        public void checkCode(Routine routine) {
-            routine.addGlobalImport(this);
-        } //TODO implement code checks
+        public void checkCode(Routine routine) throws CheckerException {
+            Store globalStore = (Store) Checker.getGlobalStoreTable().getStore(identifier.getName());
+
+            if (globalStore == null) {
+                throw new CheckerException("Global import is not declared! Ident: " + identifier.getName() + " : " + identifier.getRow());
+            }
+
+            if (globalStore.isConst() && changemode.getChangeMode() != Tokens.ChangeModeToken.ChangeMode.CONST) {
+                throw new CheckerException("Cannot import global constant as variable! Ident: " + identifier.getName() + " : " + identifier.getRow());
+            }
+
+            Store localStore = new Store(globalStore.getIdentifier(), globalStore.getType(),
+                changemode.getChangeMode() == Tokens.ChangeModeToken.ChangeMode.CONST);
+            localStore.setAddress(globalStore.getAddress());
+            localStore.setReference(false);
+            localStore.setRelative(false);
+
+            if (!Checker.getScope().getStoreTable().addStore(localStore)) {
+                throw new CheckerException("Global ident already used! Ident: " + identifier.getName() + " : " + identifier.getRow());
+            }
+
+            localStore.initialize();
+
+            routine.addGlobalImport(new GlobImp(changemode.getChangeMode(), identifier.getName()));
+            nextglobalimport.checkCode(routine);
+        }
     }
 }
 
