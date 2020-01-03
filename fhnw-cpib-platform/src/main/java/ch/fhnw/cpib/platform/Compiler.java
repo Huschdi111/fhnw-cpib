@@ -125,9 +125,10 @@ public class Compiler {
             + "y init := 3;\n"
             + "x init := 1;\n"
             + "guardif \n"
-            + "| y > 2 => x := 1\n"
-            + "| x==1 => x := 2\n"
-            + "endguardif\n"
+            + "| y > 2 => x := x + 4\n"
+            + "| x==1 => x := x + 2\n"
+            + "endguardif;\n"
+            + "! x\n"
             + "endprogram \n";
 
         new Compiler().compileString(content);

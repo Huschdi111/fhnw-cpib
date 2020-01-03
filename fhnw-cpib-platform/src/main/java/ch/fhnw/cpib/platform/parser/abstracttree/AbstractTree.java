@@ -887,8 +887,10 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            return repArrowCmd.generateCode(loc,  routine);
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1 = loc;
+            loc1 = repArrowCmd.generateCode(loc1,  routine);
+            return (nextcmd != null)? nextcmd.generateCode(loc1, routine) : loc1;
         }
     }
 
