@@ -873,10 +873,12 @@ public class AbstractTree {
     public static class GuardedCondCmd extends Cmd {
 
         public final RepArrowCmd repArrowCmd;
+        public final Cmd defaultCmds;
 
-        public GuardedCondCmd(RepArrowCmd repArrowCmd, Cmd nextcmd, int idendation) {
+        public GuardedCondCmd(RepArrowCmd repArrowCmd, Cmd defaultCmds, Cmd nextcmd, int idendation) {
             super(nextcmd, idendation);
             this.repArrowCmd = repArrowCmd;
+            this.defaultCmds = defaultCmds;
         }
 
         @Override
@@ -894,7 +896,7 @@ public class AbstractTree {
         @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = loc;
-            loc1 = repArrowCmd.generateCode(loc1,  routine);
+            loc1 = repArrowCmd.generateCode(loc1,  routine, defaultCmds);
             return (nextcmd != null)? nextcmd.generateCode(loc1, routine) : loc1;
         }
     }
@@ -935,19 +937,29 @@ public class AbstractTree {
         }
 
         @Override
-        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
-            int locJump = expression.generateCode(loc, routine);;
+        public int generateCode(int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            return 0; //makes compiler happy
+        }
+
+        public int generateCode(final int loc, boolean routine, Cmd defaultCmd) throws ICodeArray.CodeTooSmallError {
+            //Generate Expression code
+            int locJump = expression.generateCode(loc, routine);
+            //Safe space for the conditionalJump
             int locCMD = locJump + 1;
-            //Where to jump to locCMDEnd
+            //Generate code for cmd
             int locCMDEnd = cmd.generateCode(locCMD, routine);
             //reserve the space for unconditional jump until end of guard if is known
             int locUncondJump = locCMDEnd;
             locCMDEnd++;
             //Now add the Cond jump to the end of cmd decl
             Checker.getcodeArray().put(locJump, new IInstructions.CondJump(locCMDEnd));
-            int locEndNextConditional = (nextcmd != null)? nextcmd.generateCode(locCMDEnd, routine): locCMDEnd;
-            Checker.getcodeArray().put(locUncondJump, new IInstructions.UncondJump(locEndNextConditional));
-            return locEndNextConditional;
+
+            //Decide whether to
+            int loc3;
+            if (nextcmd != null) loc3 = ((RepArrowCmd) nextcmd).generateCode(locCMDEnd, routine, defaultCmd);
+            else loc3 = defaultCmd.generateCode(locCMDEnd, routine);
+            Checker.getcodeArray().put(locUncondJump, new IInstructions.UncondJump(loc3));
+            return loc3;
         }
     }
 
@@ -1770,11 +1782,9 @@ public class AbstractTree {
                 }
                 aliasList.add(((StoreExpr) expression).getStore().getIdentifier());
             }
-
             /*if (type.getValue() != ((TypedIdentType) param.getType()).getType().getValue()) {
                 throw new ContextError("Wrong paramter type!", expression.getLine());
             }*/
-
             if (expressionlist != null)
                 expressionlist.checkCode(paramList, aliasList, canInit);
         }

@@ -1194,20 +1194,24 @@ public class ConcreteTree {
 
     public static class CmdIfGuarded extends Cmd {
         private final CpsArrowTerm cpsArrowTerm;
+        private final DefaultArrowTerm defArrowTerm;
 
-        public CmdIfGuarded(CpsArrowTerm cpsArrowTerm, int idendation) {
+        public CmdIfGuarded(CpsArrowTerm cpsArrowTerm, DefaultArrowTerm defArrowTerm, int idendation) {
             super(idendation);
             this.cpsArrowTerm = cpsArrowTerm;
+            this.defArrowTerm = defArrowTerm;
         }
 
         @Override
         public String toString() {
-            return getHead("<CmdIfGuarded>") +  cpsArrowTerm + getHead("</CmdIfGuarded>");
+            return getHead("<CmdIfGuarded>") +  cpsArrowTerm  + defArrowTerm + getHead("</CmdIfGuarded>");
         }
 
         @Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
-            return new AbstractTree.GuardedCondCmd(cpsArrowTerm.toAbstract(idendation), repcpscmd.toAbstract(idendation), idendation);
+            return new AbstractTree.GuardedCondCmd(cpsArrowTerm.toAbstract(idendation)
+                ,defArrowTerm.cpscmd.toAbstract(idendation)
+                ,repcpscmd.toAbstract(idendation), idendation);
         }
     }
 
@@ -1294,8 +1298,20 @@ public class ConcreteTree {
         public AbstractTree.RepArrowCmd toAbstract(int identation) {
             return new AbstractTree.RepArrowCmd(arrowTerm.expr.toAbstract(identation + 1), arrowTerm.cpsCmd.toAbstract(identation + 1), repArrowTerm.toAbstract(identation), identation);
         }
+    }
 
+    public static class DefaultArrowTerm extends ConcreteNode{
+        private final CpsCmd cpscmd;
 
+        public DefaultArrowTerm(CpsCmd cpscmd, int indentation) {
+            super(indentation);
+            this.cpscmd = cpscmd;
+        }
+
+        @Override
+        public String toString() {
+            return getHead("<DefaultArrowTerm>") + cpscmd + getHead("</DefaultArrowTerm>");
+        }
     }
 
     public static class CmdSwitch extends Cmd {

@@ -1,6 +1,7 @@
 package ch.fhnw.cpib.platform.parser;
 
 import ch.fhnw.cpib.platform.parser.abstracttree.AbstractTree;
+import ch.fhnw.cpib.platform.parser.concretetree.ConcreteNode;
 import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.parser.concretetree.Context;
 import ch.fhnw.cpib.platform.parser.exception.ParserException;
@@ -449,8 +450,9 @@ public class Parser {
             case GUARDEDIF:
                 consumeTerminal(context, Terminal.GUARDEDIF);
                 ConcreteTree.CpsArrowTerm cpsArrowTerm = parseCpsArrowTerm(context,idendation);
+                ConcreteTree.DefaultArrowTerm defaultArrowTerm = parseDefaultCpsCmd(context,idendation);
                 consumeTerminal(context, Terminal.GUARDEDENDIF);
-                return new ConcreteTree.CmdIfGuarded(cpsArrowTerm,idendation);
+                return new ConcreteTree.CmdIfGuarded(cpsArrowTerm,defaultArrowTerm,idendation);
             case SWITCH:
                 consumeTerminal(context, Terminal.SWITCH);
                 ConcreteTree.Expr expr5 = parseExpr(context, idendation + 1);
@@ -485,6 +487,16 @@ public class Parser {
                 return new ConcreteTree.CmdDebugOut(expr8, idendation);
             default:
                 throw new ParserException("Invalid terminal in cmd(" + context.getToken().getRow() + ":" + context.getToken().getColumn() + "): " + context.getTerminal());
+        }
+    }
+
+    private ConcreteTree.DefaultArrowTerm parseDefaultCpsCmd(Context context, int idendation) throws ParserException {
+        if(context.getTerminal() == Terminal.DEFAULT) {
+            consumeTerminal(context, Terminal.DEFAULT);
+            ConcreteTree.CpsCmd cpscmd = parseCpsCmd(context, idendation + 1);
+            return new ConcreteTree.DefaultArrowTerm(cpscmd, idendation);
+        } else {
+            return new ConcreteTree.DefaultArrowTerm(null, idendation);
         }
     }
 
@@ -900,6 +912,7 @@ public class Parser {
 
     private ConcreteTree.RepArrowTerm parseRepArrowTerm(Context context, int identation) throws ParserException {
         switch (context.getTerminal()) {
+            case DEFAULT:
             case GUARDEDENDIF:
                 return new ConcreteTree.RepArrowTermEpsilon(identation);
             case GUARDOPR:
