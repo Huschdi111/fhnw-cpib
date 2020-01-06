@@ -2,6 +2,7 @@ package ch.fhnw.cpib.platform.checker;
 
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IInstructions.*;
+import ch.fhnw.cpib.platform.scanner.tokens.Tokens.MechModeToken.MechMode;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 
 public class Store extends Symbol {
@@ -17,6 +18,8 @@ public class Store extends Symbol {
     private int address;
 
     private boolean reference = true;
+
+    private MechMode mechMode = MechMode.COPY;
 
     public Store(
         final String identifier,
@@ -71,9 +74,16 @@ public class Store extends Symbol {
         this.reference = reference;
     }
 
+    public MechMode getMechMode() {
+        return mechMode;
+    }
+
+    public void setMechMode(MechMode mechMode) {
+        this.mechMode = mechMode;
+    }
+
     public int codeLoad(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {  //TODO aufl�sen und in codeRef handlen?
         int loc1 = codeRef(loc, true, false, routine);
-        //Compiler.getVM().Deref(loc1++);
         Checker.getcodeArray().put(loc1++, new Deref());
         return loc1;
     }

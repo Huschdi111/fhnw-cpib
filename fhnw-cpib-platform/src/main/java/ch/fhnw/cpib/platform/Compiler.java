@@ -141,7 +141,7 @@ public class Compiler {
 
         try {
             //InputStreamReader source = new InputStreamReader(new FileInputStream("res/code.iml"));
-            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/progParams.iml"));
+            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/globImps.iml"));
             BufferedReader reader = new BufferedReader(source);
             String currentLine = "";
             StringBuilder program = new StringBuilder();

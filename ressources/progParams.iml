@@ -1,15 +1,13 @@
-program Assoc(in var z:int64)
+program Assoc()
     global
-    var x:int32;
-    proc try()
-        local
-            var y:int64
+    proc try(in ref const x:int32)
         do
-        y init := 3;
-        y := y * 2
-    endproc
+        ! x
+    endproc;
+    var x:int32
     do
     x init := 2;
     x := -(x + 3);
+    call try(x);
     ! x
 endprogram

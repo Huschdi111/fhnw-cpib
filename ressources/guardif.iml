@@ -1,0 +1,14 @@
+program Assoc()
+ global
+    var x:int32;
+    var y:int32
+ do
+    y init := 2;
+    x init := 5;
+    guardif
+          | y > 2 => x := -(x + 4)
+          | x == 5 => x := -x
+          default x := x + 1
+    endguardif;
+    ! x
+endprogram

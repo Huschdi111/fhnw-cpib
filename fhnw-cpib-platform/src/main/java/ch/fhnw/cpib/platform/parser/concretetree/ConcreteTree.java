@@ -1258,7 +1258,7 @@ public class ConcreteTree {
 
         @Override
         public AbstractTree.RepArrowCmd toAbstract(int idendation) {
-            return new AbstractTree.RepArrowCmd(arrowTerm.expr.toAbstract(idendation + 1), arrowTerm.cpsCmd.toAbstract(idendation + 1), repArrowTerm.toAbstract(idendation), idendation);
+            return new AbstractTree.RepArrowCmd(arrowTerm.expr.toAbstract(idendation), arrowTerm.cpsCmd.toAbstract(idendation), repArrowTerm.toAbstract(idendation), idendation);
         }
     }
 

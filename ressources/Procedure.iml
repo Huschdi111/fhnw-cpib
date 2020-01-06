@@ -1,0 +1,12 @@
+program Assoc(in const z:int64)
+ global
+    proc minusOne(var x:int32)
+        do
+            x := x - 1
+            ! x
+    endproc;
+    var x:int32;
+ do
+ x init := 3;
+ call minusOne(x);
+endprogram

@@ -1,18 +1,14 @@
-program Assoc()
+program Assoc(in const z:int64)
  global
-    fun minusOne(copy var x:int32) returns y:int32
+    fun minusOne(var x:int32) returns y:int32
         do
-            x := x - 1;
-            ! x;
-            if x /= 0 then
-                y := minusOne(x)
-            else
-                y := x
-            endif
+            y := x - 1
     endfun;
-    var x:int32
+    var x:int32;
+    var y:int32
  do
+ y init := 0;
  x init := 3;
- x := minusOne(x);
- ! x
+ y := minusOne(x);
+ ! y
 endprogram
