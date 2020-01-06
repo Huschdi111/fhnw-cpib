@@ -69,11 +69,10 @@ public class VirtualMachine implements IVirtualMachine {
         fp= 0;
         while (pc > -1)
         {
-            //Debug
-            System.out.println(toString());
-            System.out.println(code[pc].getClass());
             //code execution
             code[pc].execute();
+            //Debug Stack
+            System.out.println(toString());
         }
     }
 
@@ -396,9 +395,11 @@ public class VirtualMachine implements IVirtualMachine {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append("STORE: [");
         for(Data.IBaseData dataP : store){
-            if(dataP == null) sBuilder.append("undef");
-            else sBuilder.append(dataP.toString());
-            sBuilder.append(",");
+            if(dataP == null){}
+            else {
+                sBuilder.append(dataP.toString());
+                sBuilder.append(",");
+            }
         }
         sBuilder.append("]");
         return sBuilder.toString();

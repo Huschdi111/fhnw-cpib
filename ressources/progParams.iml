@@ -1,0 +1,7 @@
+program Assoc()
+    global var x:int32
+    do
+    x init := 2;
+    x := -(x + 3);
+    ! x
+endprogram

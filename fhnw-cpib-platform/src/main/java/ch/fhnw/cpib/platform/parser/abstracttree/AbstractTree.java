@@ -111,7 +111,6 @@ public class AbstractTree {
             if (!Checker.getGlobalStoreTable().addStore(buildStore())) {
                 throw new CheckerException("Identifier " + getIdent() + " is already declared");
             }
-
             if (nextprogparam != null) {
                 nextprogparam.checkCode();
             }
@@ -1419,6 +1418,7 @@ public class AbstractTree {
             return loc1;
         }
         //
+
         public int codeRef(final int loc, boolean rel, boolean ref, boolean routine) throws ICodeArray.CodeTooSmallError {
             Store store = Checker.getScope().getStoreTable().getStore(identifier.getName());
             return ((store != null) ? store.codeRef(loc, rel, ref, routine) : loc);
@@ -1481,13 +1481,33 @@ public class AbstractTree {
 
         @Override
         public ExpressionInfo checkCode() throws CheckerException {
+            switch(operation.getOperation()) {
+                case MINUS:
+                    break;
+                case PLUS:
+                    break;
+                default:
+                    throw new CheckerException("This operation cannot be used with a monadic expression: "
+                        + operation.getOperation() + " on line: " + operation.getRow());
+            }
             return expression.checkCode();
         }
 
         @Override
-        public int generateCode(int loc, boolean routine) {
-            // TODO Auto-generated method stub
-            return 0;
+        public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
+            int loc1 = loc;
+            if(expression instanceof StoreExpr) ((StoreExpr) expression).isRValue = true;
+            switch(operation.getOperation()){
+                case MINUS:
+                    loc1 = expression.generateCode(loc1, routine);
+                    Checker.getcodeArray().put(loc1++, new IInstructions.NegInt());
+                    break;
+                case PLUS:
+                    loc1 = expression.generateCode(loc1,routine);
+                    break;
+                default:
+            }
+            return loc1;
         }
 
     }
