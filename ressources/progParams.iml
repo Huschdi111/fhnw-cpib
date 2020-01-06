@@ -1,5 +1,13 @@
-program Assoc()
-    global var x:int32
+program Assoc(in var z:int64)
+    global
+    var x:int32;
+    proc try()
+        local
+            var y:int64
+        do
+        y init := 3;
+        y := y * 2
+    endproc
     do
     x init := 2;
     x := -(x + 3);

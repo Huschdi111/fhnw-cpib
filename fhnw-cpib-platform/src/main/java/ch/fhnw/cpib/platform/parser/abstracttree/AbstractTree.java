@@ -4,7 +4,6 @@ import ch.fhnw.cpib.platform.checker.*;
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IInstructions;
-import ch.fhnw.cpib.platform.parser.concretetree.ConcreteTree;
 import ch.fhnw.cpib.platform.scanner.tokens.Tokens;
 
 import java.util.*;
@@ -53,10 +52,11 @@ public class AbstractTree {
         }
 
         public int generateCode(int loc) throws ICodeArray.CodeTooSmallError {
-            System.out.println("PROGRAM generate");
             int loc1 = loc;
             int loc2 = loc;
-
+            if(progparam != null) {
+                loc1 = progparam.generateCode(loc1);
+            }
             if (declaration != null)
                 if(declaration instanceof ProcDecl || declaration instanceof FunDecl){
                     loc1 = declaration.nextdeclaration.generateCode(loc1);
@@ -114,6 +114,23 @@ public class AbstractTree {
             if (nextprogparam != null) {
                 nextprogparam.checkCode();
             }
+        }
+
+        public int generateCode(final int loc) throws ICodeArray.CodeTooSmallError {
+            int loc1 = loc;
+            String ident = getIdent();
+            if(ident == null) throw new ICodeArray.CodeTooSmallError();
+            Store s = Checker.getGlobalStoreTable().getStore(getIdent());
+            Checker.getcodeArray().put(loc1++, new IInstructions.AllocBlock(1));
+            Checker.getcodeArray().put(loc1++, new IInstructions.LoadImInt(loc1));
+            if(s.getType() == Tokens.TypeToken.Type.BOOL)
+                Checker.getcodeArray().put(loc1++, new IInstructions.InputBool(getIdent()));
+            else
+                Checker.getcodeArray().put(loc1++, new IInstructions.InputInt(getIdent()));
+
+            s.setAddress(loc1);
+            Checker.addIdentTable(ident,loc1);
+            return (nextprogparam != null)?nextprogparam.generateCode(loc1):loc1;
         }
 
         private String getIdent() {

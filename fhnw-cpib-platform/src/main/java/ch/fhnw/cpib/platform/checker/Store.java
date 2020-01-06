@@ -32,6 +32,10 @@ public class Store extends Symbol {
         return isConst;
     }
 
+    public void setConst(boolean aConst) {
+        isConst = aConst;
+    }
+
     public boolean isWriteable() {
         return writeable;
     }
