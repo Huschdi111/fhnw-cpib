@@ -47,6 +47,14 @@ public class Store extends Symbol {
         }
     }
 
+    public boolean isRelative() {
+        return relative;
+    }
+
+    public boolean isReference() {
+        return reference;
+    }
+
     public void setAddress(final int address) { this.address = address; }
 
     public int getAddress() { return address; }
@@ -73,24 +81,19 @@ public class Store extends Symbol {
         this.setReference(ref);
 
         if (relative && routine) {
-            //Compiler.getVM().LoadRel(loc1++, address);
             if(Checker.getprocIdentTable().get(getIdentifier())[1].equals("COPY")){
                 Checker.getcodeArray().put(loc1++, new LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(getIdentifier())[0])));
             }else{
                 Checker.getcodeArray().put(loc1++, new LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(getIdentifier())[0])));
                 Checker.getcodeArray().put(loc1++, new Deref());
             }
-
-
         }else if(relative){
             Checker.getcodeArray().put(loc1++, new LoadAddrRel(Checker.getIdentTable().get(getIdentifier())));
         } else {
-            //Compiler.getVM().IntLoad(loc1++, address);
             Checker.getcodeArray().put(loc1++, new LoadImInt(address));
         }
 
         if (reference) {
-            //Compiler.getVM().Deref(loc1++);
             Checker.getcodeArray().put(loc1++, new Deref());
         }
         return loc1;

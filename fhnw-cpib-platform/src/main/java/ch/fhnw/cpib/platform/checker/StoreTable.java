@@ -52,4 +52,16 @@ public class StoreTable {
         return newTable;
     }
 
+    @Override
+    public String toString() {
+       StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append("{");
+       storeMap.forEach((k,s) -> {
+           sBuilder.append(k);
+           sBuilder.append(",");
+       });
+       sBuilder.append("}");
+       return sBuilder.toString();
+
+    }
 }

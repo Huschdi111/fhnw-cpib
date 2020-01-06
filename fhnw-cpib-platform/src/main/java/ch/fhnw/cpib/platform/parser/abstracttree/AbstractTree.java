@@ -636,6 +636,12 @@ public class AbstractTree {
             this.expressionlist1 = expressionlist1;
             this.expression2 = expression2;
             this.expressionlist2 = expressionlist2;
+
+            //Hacky solution for rValue issue (if expression is a single instance of a variable)
+            if(expression1 instanceof StoreExpr){
+                //((StoreExpr)expression1).isRValue = true;
+            }
+
         }
 
         @Override
@@ -689,6 +695,7 @@ public class AbstractTree {
             int loc1 = loc;
             if(expression1 instanceof StoreExpr) {
                 int locAfAdress = expression1.generateCode(loc1, routine); //ladet die addresse
+                if(expression2 instanceof StoreExpr) ((StoreExpr) expression2).isRValue = true;
                 int locAfValue = expression2.generateCode(locAfAdress, routine); // legt wert auf locAfAdresse ab
                 Checker.getcodeArray().put(locAfValue, new IInstructions.Store());
                 loc1 = locAfValue + 1;
@@ -1329,6 +1336,8 @@ public class AbstractTree {
 
         public final boolean initialized;
 
+        public boolean isRValue;
+
         public StoreExpr(Tokens.IdentifierToken identifier, boolean initialized, int idendation) {
             super(idendation);
             this.identifier = identifier;
@@ -1381,7 +1390,6 @@ public class AbstractTree {
         }
 
 
-        @Override
         public int generateCode(final int loc, boolean routine) throws ICodeArray.CodeTooSmallError {
             int loc1 = loc;
             //Get the store table of this scope
@@ -1392,8 +1400,10 @@ public class AbstractTree {
                     if(store==null){
                         Checker.getcodeArray().put(loc1++, new IInstructions.LoadAddrRel(Integer.parseInt(Checker.getprocIdentTable().get(identifier.getName())[0])));
                         return loc1;
-                    }else{
-                        loc1 = store.codeRef(loc, true, false, routine);
+                    }
+                    else{
+                        if(isRValue) loc1 = store.codeRef(loc, true, true, routine);
+                        else loc1 = store.codeRef(loc, true, false, routine);
                         return loc1;
                     }
                 } else {
@@ -1402,9 +1412,10 @@ public class AbstractTree {
                 }
             } else {
                 store = Checker.getScope().getStoreTable().getStore(identifier.getName());
-                Checker.getcodeArray().put(loc1, new IInstructions.LoadImInt(Checker.getIdentTable().get(identifier.getName())));
+                Checker.getcodeArray().put(loc1++, new IInstructions.LoadImInt(Checker.getIdentTable().get(identifier.getName())));
+                if(isRValue) Checker.getcodeArray().put(loc1++, new IInstructions.Deref());
+
             }
-            loc1++;
             return loc1;
         }
         //

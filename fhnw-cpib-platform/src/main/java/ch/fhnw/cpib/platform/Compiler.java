@@ -13,6 +13,10 @@ import ch.fhnw.cpib.platform.scanner.Scanner;
 import ch.fhnw.cpib.platform.scanner.exception.ScannerException;
 import ch.fhnw.cpib.platform.scanner.tokens.TokenList;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+
 public class Compiler {
 
     private final Scanner scanner;
@@ -91,14 +95,16 @@ public class Compiler {
     public static void main(String[] args) {
 
         /*String content = "program Assoc()\n"
-            + "global b:bool; x:int32\n"
+            + "global b:bool; x:int32; y:int32\n"
             + " do \n"
-            + " b init := 2;"
+            + " y init := 9;"
+            + " b init := 1;"
             + " x init := 1;\n"
-            + " if b then \n "
-            + "     x := x + 1\n"
+            + " if b > 0 then \n "
+            + "     x := b\n"
             + " else x := x + 2\n"
-            + " endif \n"
+            + " endif; \n"
+            + " ! x\n"
             + "endprogram \n";*/
         /*String content = "program Assoc()\n"
             + "global \n"
@@ -133,20 +139,21 @@ public class Compiler {
             + "! x\n"
             + "endprogram \n";*/
 
-            String content = "program Assoc()\n"
-            + "global \n"
-            + "  fun plusOne(copy var x:int32) returns y:int32 \n "
-            + "  do \n"
-            + "     x := x - 1;\n"
-            + "     if x == 0 then y init := plusOne(x) endif\n"
-            + "  endfun; \n"
-            + "  var x:int32 \n"
-            + "do \n"
-            + "  x init := 3;\n"
-            + "  x := plusOne(x);\n"
-            + "  ! x \n"
-            + "endprogram \n";
+        try {
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("res/code.iml"));
+            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/globImps.iml"));
+            BufferedReader reader = new BufferedReader(source);
+            String currentLine = "";
+            StringBuilder program = new StringBuilder();
 
-        new Compiler().compileString(content);
+            while ((currentLine = reader.readLine()) != null) {
+                program.append(currentLine + "\n");
+            }
+
+            new Compiler().compileString(program.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
