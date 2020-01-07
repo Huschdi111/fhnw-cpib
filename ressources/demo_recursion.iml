@@ -1,0 +1,17 @@
+program Assoc()
+ global
+    fun minusOneRec(var x:int32) returns y:int32
+        do
+            x := x - 1;
+            ! x;
+            if x == 0 then y := x
+            else y := minusOneRec(x)
+            endif
+    endfun;
+    var x:int32;
+    var y:int32
+ do
+ x init := 5;
+ y := minusOneRec(x);
+ ! y
+endprogram

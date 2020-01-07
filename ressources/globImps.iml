@@ -1,4 +1,4 @@
-program Assoc(in const z:int64)
+program Assoc(in const z:int32)
  global
     fun minusOne(var x:int32) returns y:int32
         do
@@ -7,8 +7,8 @@ program Assoc(in const z:int64)
     var x:int32;
     var y:int32
  do
- y init := 0;
- x init := 3;
- y := minusOne(x);
+ y init := z;
+ ! y;
+ y := minusOne(y);
  ! y
 endprogram

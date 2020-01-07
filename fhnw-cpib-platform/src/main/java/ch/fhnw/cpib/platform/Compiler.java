@@ -71,7 +71,7 @@ public class Compiler {
             System.out.println("===== Execute VM =====");
             ICodeArray codeArray = Checker.getcodeArray();
             codeArray.resize();
-            new VirtualMachine(codeArray, codeArray.getSize()); //TODO find the right size for stack
+            new VirtualMachine(codeArray, codeArray.getSize() * 4); //TODO find the right size for stack
 
 
         } catch (ScannerException exception) {
@@ -93,55 +93,11 @@ public class Compiler {
     }
 
     public static void main(String[] args) {
-
-        /*String content = "program Assoc()\n"
-            + "global b:bool; x:int32; y:int32\n"
-            + " do \n"
-            + " y init := 9;"
-            + " b init := 1;"
-            + " x init := 1;\n"
-            + " if b > 0 then \n "
-            + "     x := b\n"
-            + " else x := x + 2\n"
-            + " endif; \n"
-            + " ! x\n"
-            + "endprogram \n";*/
-        /*String content = "program Assoc()\n"
-            + "global \n"
-            + "var x:int32; \n"
-            + "const y:int32 \n"
-            + "do \n"
-            + "y init := 3;\n"
-            + "x init := 2;\n"
-            + "while y > 0 do\n"
-            + "  y := y - 1;\n"
-            + "  ! y\n"
-            + "endwhile;\n"
-            + "if x == 2 then\n"
-            + "? x \n"
-            + "endif;\n"
-            + "x := (x + y) * 2;"
-            + "! x\n"
-            + "endprogram \n";*/
-        /*String content = "program Assoc()\n"
-            + "global \n"
-            + "var x:int32; \n"
-            + "const y:int32 \n"
-            + "do \n"
-            + "y init := 2;\n"
-            + "x init := 1;\n"
-            + "guardif \n"
-            + "  | y > 2 => x := x + 4\n"
-            + "  | x == 5 => x := x + 2\n"
-            + " default \n"
-            + "   x := x + 1 \n"
-            + "endguardif;\n"
-            + "! x\n"
-            + "endprogram \n";*/
-
         try {
-            //InputStreamReader source = new InputStreamReader(new FileInputStream("res/code.iml"));
-            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/globImps.iml"));
+            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/guardif.iml"));
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_recursion.iml"));
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_proc_guardif.iml"));
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fac.iml"));
             BufferedReader reader = new BufferedReader(source);
             String currentLine = "";
             StringBuilder program = new StringBuilder();

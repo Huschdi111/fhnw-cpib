@@ -394,9 +394,11 @@ public class VirtualMachine implements IVirtualMachine {
     public String toString() {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append("STORE: [");
-        for(Data.IBaseData dataP : store){
+        for(int i = 0; i < store.length; i ++){
+            Data.IBaseData dataP = store[i];
             if(dataP == null){}
             else {
+                if(sp == i) sBuilder.append("=>");
                 sBuilder.append(dataP.toString());
                 sBuilder.append(",");
             }

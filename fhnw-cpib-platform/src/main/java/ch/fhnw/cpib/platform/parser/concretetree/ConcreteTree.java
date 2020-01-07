@@ -232,7 +232,9 @@ public class ConcreteTree {
         }
 
         public AbstractTree.Declaration toAbstract(RepCpsDecl repcpsdecl, int idendation) {
-            return new AbstractTree.ProcDecl(identifier, paramlist.toAbstract(idendation + 1), optglobimps.toAbstract(idendation + 1), optcpsstodecl.toAbstract(idendation), repcpsdecl.toAbstract(idendation), cpscmd.toAbstract(idendation + 1), idendation);
+            AbstractTree.Cmd cmd = null;
+            if(cpscmd != null) cmd = cpscmd.toAbstract(idendation + 1);
+            return new AbstractTree.ProcDecl(identifier, paramlist.toAbstract(idendation + 1), optglobimps.toAbstract(idendation + 1), optcpsstodecl.toAbstract(idendation), repcpsdecl.toAbstract(idendation),cmd, idendation);
         }
     }
 
