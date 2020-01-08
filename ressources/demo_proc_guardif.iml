@@ -1,4 +1,4 @@
-program procGuardIF()
+program progGuardIF()
  global
     proc isDivisibleByThree(copy var x:int32, copy var b:bool)
         do

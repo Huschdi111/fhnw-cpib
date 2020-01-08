@@ -72,7 +72,7 @@ public class VirtualMachine implements IVirtualMachine {
             //code execution
             code[pc].execute();
             //Debug Stack
-            System.out.println(toString());
+            //System.out.println(toString());
         }
     }
 

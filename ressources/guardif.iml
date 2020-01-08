@@ -2,14 +2,15 @@ program guardProg()
  global
     var x:int32;
     var y:int32
+    //var x:int32
  do
-    y init := 2;
-    x init := 5;
+    y init := 3;
+    x init := 4;
     guardif
-          //| x + 1 => x := -(x + 4)
-          | y > 2 => x := -(x + 4)
+          //| x + 1 => x := -(x + 4);
+          | y > 2 => x := -(x + 4); x := x + 1; x := x + 1
           | x == 5 => x := -x
-          default x := x + 1
+          //default x := x + 1
     endguardif;
     ! x
 endprogram

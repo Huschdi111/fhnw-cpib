@@ -978,9 +978,15 @@ public class AbstractTree {
             Checker.getcodeArray().put(locJump, new IInstructions.CondJump(locCMDEnd));
 
             //Decide whether to
-            int loc3;
-            if (nextcmd != null) loc3 = ((RepArrowCmd) nextcmd).generateCode(locCMDEnd, routine, defaultCmd);
-            else loc3 = defaultCmd.generateCode(locCMDEnd, routine);
+            int loc3 = locCMDEnd;
+            if (nextcmd != null) {
+                loc3 = ((RepArrowCmd) nextcmd).generateCode(locCMDEnd, routine, defaultCmd);
+            }
+            else{
+                if ((defaultCmd != null)) {
+                    loc3 = defaultCmd.generateCode(locCMDEnd, routine);
+                } 
+            }
             Checker.getcodeArray().put(locUncondJump, new IInstructions.UncondJump(loc3));
             return loc3;
         }

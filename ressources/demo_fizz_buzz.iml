@@ -1,0 +1,17 @@
+program progGuardIF()
+global var counter:int32; var print:int32
+do
+    counter init := 1;
+    print init := 0;
+    while counter < 16 do
+        guardif
+            | (counter modE 15) == 0 => print := 3
+            | (counter modE 3) == 0 => print := 1
+            | (counter modE 5) == 0 => print := 2
+            //| (counter modE 15) == 0 => print := 3
+            default print := 0
+        endguardif;
+        ! print;
+        counter := counter + 1
+    endwhile
+endprogram

@@ -2,11 +2,12 @@ program fakultät()
 global
 	fun fac(copy a:int64) returns r:int64
  	do
-    	if a <= 1 then
-			r init := a
-		else
-            r init := a * fac(a - 1)
-		endif
+
+ 	guardif
+ 	| a <= 1 => r init := a; r := r-1; r := r+1
+ 	default r init := a * fac(a - 1)
+ 	endguardif
+
  	endfun;
 	var a:int64
 do

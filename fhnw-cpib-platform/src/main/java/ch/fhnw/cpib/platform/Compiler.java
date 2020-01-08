@@ -1,7 +1,6 @@
 package ch.fhnw.cpib.platform;
 import ch.fhnw.cpib.platform.checker.Checker;
 import ch.fhnw.cpib.platform.checker.CheckerException;
-import ch.fhnw.cpib.platform.javavm.CodeArray;
 import ch.fhnw.cpib.platform.javavm.ICodeArray;
 import ch.fhnw.cpib.platform.javavm.IVirtualMachine;
 import ch.fhnw.cpib.platform.javavm.VirtualMachine;
@@ -98,6 +97,10 @@ public class Compiler {
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_recursion.iml"));
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_proc_guardif.iml"));
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fac.iml"));
+
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fizz_buzz.iml"));
+
+
             BufferedReader reader = new BufferedReader(source);
             String currentLine = "";
             StringBuilder program = new StringBuilder();

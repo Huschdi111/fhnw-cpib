@@ -1211,8 +1211,10 @@ public class ConcreteTree {
 
         @Override
         public AbstractTree.Cmd toAbstract(RepCpsCmd repcpscmd, int idendation) {
+            AbstractTree.Cmd cmd = null;
+            if(defArrowTerm.cpscmd != null) cmd = defArrowTerm.cpscmd.toAbstract(idendation);
             return new AbstractTree.GuardedCondCmd(cpsArrowTerm.toAbstract(idendation)
-                ,defArrowTerm.cpscmd.toAbstract(idendation)
+                ,cmd
                 ,repcpscmd.toAbstract(idendation), idendation);
         }
     }
