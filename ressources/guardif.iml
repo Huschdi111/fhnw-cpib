@@ -8,9 +8,9 @@ program guardProg()
     x init := 4;
     guardif
           //| x + 1 => x := -(x + 4);
-          | y > 2 => x := -(x + 4); x := x + 1; x := x + 1
+          | y > 2 => x := -(x + 4);
           | x == 5 => x := -x
-          //default x := x + 1
+          default x := x + 1
     endguardif;
     ! x
 endprogram

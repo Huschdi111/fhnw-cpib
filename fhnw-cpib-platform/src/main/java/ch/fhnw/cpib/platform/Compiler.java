@@ -93,10 +93,10 @@ public class Compiler {
 
     public static void main(String[] args) {
         try {
-            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/guardif.iml"));
+            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/guardif.iml"));
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_recursion.iml"));
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_proc_guardif.iml"));
-            //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fac.iml"));
+            InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fac.iml"));
 
             //InputStreamReader source = new InputStreamReader(new FileInputStream("ressources/demo_fizz_buzz.iml"));
 

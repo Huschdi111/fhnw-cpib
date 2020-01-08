@@ -5,14 +5,14 @@ program progGuardIF()
             guardif
                 | (x modE 3) == 0 => b := 1
                 | (x modE 3) > 0 => b := 0
-                default b := 0
+                //default b := 0
             endguardif;
             ! b
     endproc;
     var x:int32;
     var b:bool
  do
- x init := 7;
+ x init := 6;
  b init := 0;
  call isDivisibleByThree(x,b)
 endprogram

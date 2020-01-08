@@ -985,7 +985,7 @@ public class AbstractTree {
             else{
                 if ((defaultCmd != null)) {
                     loc3 = defaultCmd.generateCode(locCMDEnd, routine);
-                } 
+                }
             }
             Checker.getcodeArray().put(locUncondJump, new IInstructions.UncondJump(loc3));
             return loc3;
